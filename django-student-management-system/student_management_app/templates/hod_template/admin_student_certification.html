@@ -1,0 +1,112 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block page_title %}
+Student Certifications
+{% endblock page_title %}
+
+{% block main_content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-info card-outline shadow-sm" style="border-radius: 10px;">
+                    <div class="card-header border-0 bg-transparent pt-4 pb-0 pl-4">
+                        <h3 class="card-title font-weight-bold text-info">
+                            <i class="fas fa-certificate mr-2"></i> Manage Applications
+                        </h3>
+                    </div>
+
+                    <div class="card-body mt-2 p-0">
+                        {% if messages %}
+                        <div class="form-group p-4 mb-0 pb-0">
+                            <div class="col-12 p-0">
+                                {% for message in messages %}
+                                {% if message.tags == "error" %}
+                                <div class="alert alert-danger alert-dismissible fade show shadow-sm"
+                                    style="border-radius: 8px;" role="alert">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>{{ message }}
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                {% elif message.tags == "success" %}
+                                <div class="alert alert-success alert-dismissible fade show shadow-sm"
+                                    style="border-radius: 8px;" role="alert">
+                                    <i class="fas fa-check mr-2"></i>{{ message }}
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 mt-3">
+                                <thead class="bg-light text-muted">
+                                    <tr>
+                                        <th class="border-top-0 pl-4">App ID</th>
+                                        <th class="border-top-0">Student Name</th>
+                                        <th class="border-top-0">Certificate Type</th>
+                                        <th class="border-top-0">Applied On</th>
+                                        <th class="border-top-0">Status</th>
+                                        <th class="border-top-0">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for app in applications %}
+                                    <tr>
+                                        <td class="pl-4 font-weight-bold text-muted">#CERT-{{ app.id }}</td>
+                                        <td class="font-weight-bold">
+                                            {{ app.student_id.admin.first_name }}
+                                            {{ app.student_id.admin.last_name }}
+                                        </td>
+                                        <td>{{ app.certificate_type }}</td>
+                                        <td>{{ app.created_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            {% if app.status == "Pending" %}
+                                            <span class="badge badge-warning px-3 py-2"
+                                                style="border-radius: 20px;">Pending</span>
+                                            {% elif app.status == "Approved" %}
+                                            <span class="badge badge-success px-3 py-2"
+                                                style="border-radius: 20px;">Approved</span>
+                                            {% else %}
+                                            <span class="badge badge-danger px-3 py-2"
+                                                style="border-radius: 20px;">Rejected</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if app.status == "Pending" %}
+                                            <a href="{% url 'admin_certificate_status' app.id 'approve' %}"
+                                                class="btn btn-sm btn-success mr-2" title="Approve">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                            <a href="{% url 'admin_certificate_status' app.id 'reject' %}"
+                                                class="btn btn-sm btn-danger" title="Reject">
+                                                <i class="fas fa-times"></i>
+                                            </a>
+                                            {% else %}
+                                            <span class="text-muted"><i class="fas fa-lock"></i> Processed</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5 text-muted">
+                                            <i class="fas fa-folder fa-3x mb-3 text-light"></i>
+                                            <p class="mb-0">No certificate applications found.</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main_content %}

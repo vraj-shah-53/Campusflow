@@ -1,0 +1,144 @@
+{% extends 'student_template/base_template.html' %}
+
+{% block page_title %}
+Apply for Certificate
+{% endblock page_title %}
+
+{% block main_content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Application Form Component -->
+            <div class="col-md-5">
+                <div class="card card-primary card-outline shadow-sm" style="border-radius: 10px;">
+                    <div class="card-header border-0 bg-transparent pt-4 pb-0 pl-4">
+                        <h3 class="card-title font-weight-bold text-primary">
+                            <i class="fas fa-file-alt mr-2"></i> Submit Application
+                        </h3>
+                    </div>
+
+                    <form action="{% url 'student_certificate_apply_save' %}" method="post">
+                        {% csrf_token %}
+                        <div class="card-body p-4">
+                            {% if messages %}
+                            <div class="form-group">
+                                <div class="col-12 p-0">
+                                    {% for message in messages %}
+                                    {% if message.tags == "error" %}
+                                    <div class="alert alert-danger alert-dismissible fade show shadow-sm"
+                                        style="border-radius: 8px;" role="alert">
+                                        <i class="fas fa-exclamation-triangle mr-2"></i>{{ message }}
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    {% elif message.tags == "success" %}
+                                    <div class="alert alert-success alert-dismissible fade show shadow-sm"
+                                        style="border-radius: 8px;" role="alert">
+                                        <i class="fas fa-check mr-2"></i>{{ message }}
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <p class="text-muted mb-4">Select the type of certificate you wish to apply for. Your
+                                request will be sent to the HOD for approval.</p>
+
+                            <div class="form-group mb-4">
+                                <label for="certificate_type" class="text-muted">Certificate Type</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-white border-right-0"><i
+                                                class="fas fa-diploma text-primary"></i></span>
+                                    </div>
+                                    <select class="form-control border-left-0 pl-0 custom-select" id="certificate_type"
+                                        name="certificate_type" required>
+                                        <option value="" disabled selected>Select an option...</option>
+                                        <option value="Bonafide Certificate">Bonafide Certificate</option>
+                                        <option value="Letter of Recommendation (LOR)">Letter of Recommendation (LOR)
+                                        </option>
+                                        <option value="Duplicate ID Card">Duplicate ID Card</option>
+                                        <option value="Character Certificate">Character Certificate</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-light border shadow-sm">
+                                <h6 class="font-weight-bold text-dark"><i class="fas fa-info-circle text-info mr-2"></i>
+                                    Notice:</h6>
+                                <small class="text-muted">Applications generally take 2-3 business days to process.
+                                    Check the history panel for your application status.</small>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-transparent border-0 pb-4 px-4 pt-0">
+                            <button type="submit" class="btn btn-primary btn-block btn-lg shadow-sm"
+                                style="border-radius: 8px; font-weight: 500;">
+                                Apply Now <i class="fas fa-paper-plane ml-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Application History Component -->
+            <div class="col-md-7">
+                <div class="card shadow-sm" style="border-radius: 10px;">
+                    <div class="card-header border-0 bg-transparent pt-4 pb-3 pl-4">
+                        <h3 class="card-title font-weight-bold text-secondary">
+                            <i class="fas fa-history mr-2"></i> Application History
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light text-muted">
+                                    <tr>
+                                        <th class="border-top-0 pl-4">Application ID</th>
+                                        <th class="border-top-0">Type</th>
+                                        <th class="border-top-0">Applied On</th>
+                                        <th class="border-top-0">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for app in certificate_history %}
+                                    <tr>
+                                        <td class="pl-4 font-weight-bold text-muted">#CERT-{{ app.id }}</td>
+                                        <td class="font-weight-bold">{{ app.certificate_type }}</td>
+                                        <td>{{ app.created_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            {% if app.status == "Pending" %}
+                                            <span class="badge badge-warning px-3 py-2"
+                                                style="border-radius: 20px;">Pending</span>
+                                            {% elif app.status == "Approved" %}
+                                            <span class="badge badge-success px-3 py-2"
+                                                style="border-radius: 20px;">Approved</span>
+                                            {% else %}
+                                            <span class="badge badge-danger px-3 py-2"
+                                                style="border-radius: 20px;">Rejected</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted">
+                                            <i class="fas fa-folder-open fa-3x mb-3 text-light"></i>
+                                            <p class="mb-0">No past applications found.</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main_content %}

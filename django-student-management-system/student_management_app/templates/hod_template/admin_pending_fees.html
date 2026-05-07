@@ -1,0 +1,69 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block page_title %}
+Pending Student Fees
+{% endblock page_title %}
+
+{% block main_content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-danger card-outline shadow-sm" style="border-radius: 10px;">
+                    <div class="card-header border-0 bg-transparent pt-4 pb-0 pl-4">
+                        <h3 class="card-title font-weight-bold text-danger">
+                            <i class="fas fa-rupee-sign mr-2"></i> Unpaid Course Fees
+                        </h3>
+                    </div>
+
+                    <div class="card-body mt-2 p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light text-muted">
+                                    <tr>
+                                        <th class="border-top-0 pl-4">Student ID</th>
+                                        <th class="border-top-0">Name</th>
+                                        <th class="border-top-0">Username</th>
+                                        <th class="border-top-0">Course</th>
+                                        <th class="border-top-0">Total Fee</th>
+                                        <th class="border-top-0">Paid Amount</th>
+                                        <th class="border-top-0">Pending Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for data in student_fee_data %}
+                                    <tr>
+                                        <td class="pl-4 font-weight-bold text-muted">#STU-{{ data.student.id }}</td>
+                                        <td class="font-weight-bold">
+                                            {{ data.student.admin.first_name }}
+                                            {{ data.student.admin.last_name }}
+                                        </td>
+                                        <td>{{ data.student.admin.username }}</td>
+                                        <td>{{ data.course }}</td>
+                                        <td>₹{{ data.total_fee }}</td>
+                                        <td class="text-success font-weight-bold">₹{{ data.paid_fee }}</td>
+                                        <td>
+                                            <span class="badge badge-danger px-3 py-2 text-md"
+                                                style="border-radius: 20px;">
+                                                ₹{{ data.pending_fee }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5 text-muted">
+                                            <i class="fas fa-check-circle fa-3x mb-3 text-success"></i>
+                                            <p class="mb-0">All students have cleared their fee dues!</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main_content %}
