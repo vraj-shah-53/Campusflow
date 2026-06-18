@@ -71,7 +71,7 @@ def staff_home(request):
 
 def staff_take_attendance(request):
     subjects = Subjects.objects.filter(staff_id=request.user.id)
-    session_years = SessionYearModel.objects.all()
+    session_years = SessionYearModel.objects.filter(admin_creator=request.user.staffs.admin_creator)
     context = {
         "subjects": subjects,
         "session_years": session_years
@@ -196,7 +196,7 @@ def save_attendance_data(request):
 
 def staff_update_attendance(request):
     subjects = Subjects.objects.filter(staff_id=request.user.id)
-    session_years = SessionYearModel.objects.all()
+    session_years = SessionYearModel.objects.filter(admin_creator=request.user.staffs.admin_creator)
     context = {
         "subjects": subjects,
         "session_years": session_years
@@ -292,6 +292,13 @@ def staff_profile_update(request):
         password = request.POST.get('password')
         address = request.POST.get('address')
 
+        profile_pic_url = None
+        if len(request.FILES) != 0:
+            profile_pic = request.FILES['profile_pic']
+            fs = FileSystemStorage()
+            filename = fs.save(profile_pic.name, profile_pic)
+            profile_pic_url = filename
+
         try:
             customuser = CustomUser.objects.get(id=request.user.id)
             customuser.first_name = first_name
@@ -302,6 +309,8 @@ def staff_profile_update(request):
 
             staff = Staffs.objects.get(admin=customuser.id)
             staff.address = address
+            if profile_pic_url != None:
+                staff.profile_pic = profile_pic_url
             staff.save()
 
             messages.success(request, "Profile Updated Successfully")
@@ -314,7 +323,7 @@ def staff_profile_update(request):
 
 def staff_add_result(request):
     subjects = Subjects.objects.filter(staff_id=request.user.id)
-    session_years = SessionYearModel.objects.all()
+    session_years = SessionYearModel.objects.filter(admin_creator=request.user.staffs.admin_creator)
     context = {
         "subjects": subjects,
         "session_years": session_years,

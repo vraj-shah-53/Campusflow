@@ -6,6 +6,9 @@ from django.urls import reverse
 import datetime # To Parse input DateTime into Python Date Time Object
 import openai
 import os
+import requests
+import json
+from django.conf import settings
 
 from student_management_app.models import CustomUser, Staffs, Courses, Subjects, Students, Attendance, AttendanceReport, LeaveReportStudent, FeedBackStudent, StudentResult, FeePaymentHistory, CertificateApplication
 
@@ -184,6 +187,13 @@ def student_profile_update(request):
         password = request.POST.get('password')
         address = request.POST.get('address')
 
+        profile_pic_url = None
+        if len(request.FILES) != 0:
+            profile_pic = request.FILES['profile_pic']
+            fs = FileSystemStorage()
+            filename = fs.save(profile_pic.name, profile_pic)
+            profile_pic_url = filename
+
         try:
             customuser = CustomUser.objects.get(id=request.user.id)
             customuser.first_name = first_name
@@ -194,6 +204,8 @@ def student_profile_update(request):
 
             student = Students.objects.get(admin=customuser.id)
             student.address = address
+            if profile_pic_url != None:
+                student.profile_pic = profile_pic_url
             student.save()
             
             messages.success(request, "Profile Updated Successfully")
@@ -295,53 +307,155 @@ from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def student_chatbot(request):
     if request.method == "POST":
-        user_message = request.POST.get('message', '').lower()
+        user_message = request.POST.get('message', '')
         
-        # OPENAI Chatbot Integration
-        # Ensure you set the environment variable OPENAI_API_KEY
+        errors = {}
         
-        # Optional: You can hardcode your API key here for testing, but it's recommended to use environment variables.
-        api_key = os.environ.get('OPENAI_API_KEY', 'your-api-key-here')
-        
-        if api_key and api_key != 'your-api-key-here':
+        # 1. Try OpenRouter API (Free & No Card Details Required)
+        openrouter_api_key = os.environ.get('OPENROUTER_API_KEY') or getattr(settings, 'OPENROUTER_API_KEY', None)
+        if openrouter_api_key:
             try:
-                client = openai.OpenAI(api_key=api_key)
+                url = "https://openrouter.ai/api/v1/chat/completions"
+                headers = {
+                    "Authorization": f"Bearer {openrouter_api_key}",
+                    "Content-Type": "application/json"
+                }
+                data = {
+                    "model": "openrouter/free",
+                    "messages": [
+                        {"role": "system", "content": "You are a helpful university AI assistant for the CampusFlow Student Dashboard. You help students understand features like attendance, results, leave application, fee payment, and certificate applications. Keep your answers brief, friendly, and helpful."},
+                        {"role": "user", "content": user_message}
+                    ]
+                }
+                response = requests.post(url, headers=headers, json=data, timeout=10)
+                if response.status_code == 200:
+                    res_data = response.json()
+                    reply = res_data['choices'][0]['message']['content']
+                    return JsonResponse({"success": True, "reply": reply.strip()})
+                else:
+                    errors['OpenRouter'] = f"Status {response.status_code}: {response.text}"
+                    print(f"OpenRouter API Error: {errors['OpenRouter']}")
+            except Exception as e:
+                errors['OpenRouter'] = f"Exception: {str(e)}"
+                print(f"OpenRouter API Exception: {e}")
+
+        # 2. Try Groq API (Free & No Card Details Required)
+        groq_api_key = os.environ.get('GROQ_API_KEY') or getattr(settings, 'GROQ_API_KEY', None)
+        if groq_api_key:
+            try:
+                url = "https://api.groq.com/openai/v1/chat/completions"
+                headers = {
+                    "Authorization": f"Bearer {groq_api_key}",
+                    "Content-Type": "application/json"
+                }
+                data = {
+                    "model": "llama3-8b-8192",
+                    "messages": [
+                        {"role": "system", "content": "You are a helpful university AI assistant for the CampusFlow Student Dashboard. You help students understand features like attendance, results, leave application, fee payment, and certificate applications. Keep your answers brief, friendly, and helpful."},
+                        {"role": "user", "content": user_message}
+                    ]
+                }
+                response = requests.post(url, headers=headers, json=data, timeout=10)
+                if response.status_code == 200:
+                    res_data = response.json()
+                    reply = res_data['choices'][0]['message']['content']
+                    return JsonResponse({"success": True, "reply": reply.strip()})
+                else:
+                    errors['Groq'] = f"Status {response.status_code}: {response.text}"
+                    print(f"Groq API Error: {errors['Groq']}")
+            except Exception as e:
+                errors['Groq'] = f"Exception: {str(e)}"
+                print(f"Groq API Exception: {e}")
+
+        # 3. Try Gemini API
+        gemini_api_key = os.environ.get('GEMINI_API_KEY') or getattr(settings, 'GEMINI_API_KEY', None)
+        if gemini_api_key:
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={gemini_api_key}"
+                headers = {'Content-Type': 'application/json'}
+                prompt = (
+                    "You are a helpful university AI assistant for the CampusFlow Student Dashboard. "
+                    "You help students understand features like attendance, results, leave application, fee payment, and certificate applications. "
+                    "Keep your answers brief, friendly, and helpful.\n\n"
+                    f"User: {user_message}\n"
+                    "Assistant:"
+                )
+                data = {
+                    "contents": [{
+                        "parts": [{"text": prompt}]
+                    }],
+                    "generationConfig": {
+                        "maxOutputTokens": 200,
+                        "temperature": 0.7
+                    }
+                }
                 
-                # We add system context to make the AI act like a campus helper
+                response = requests.post(url, headers=headers, json=data, timeout=10)
+                if response.status_code == 200:
+                    res_data = response.json()
+                    reply = res_data['candidates'][0]['content']['parts'][0]['text']
+                    return JsonResponse({"success": True, "reply": reply.strip()})
+                else:
+                    errors['Gemini'] = f"Status {response.status_code}: {response.text}"
+                    print(f"Gemini API Error Status {response.status_code}: {response.text}")
+            except Exception as e:
+                errors['Gemini'] = f"Exception: {str(e)}"
+                print(f"Gemini API Exception: {e}")
+
+        # 4. Try OpenAI API
+        openai_api_key = os.environ.get('OPENAI_API_KEY') or getattr(settings, 'OPENAI_API_KEY', None)
+        if openai_api_key and openai_api_key != 'your-api-key-here':
+            try:
+                client = openai.OpenAI(api_key=openai_api_key)
                 response = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=[
                         {"role": "system", "content": "You are a helpful university AI assistant for the CampusFlow Student Dashboard. You help students understand features like attendance, results, leave application, fee payment, and certificate applications. Keep your answers brief, friendly, and helpful."},
                         {"role": "user", "content": user_message}
                     ],
-                    max_tokens=150
+                    max_tokens=150,
+                    temperature=0.7
                 )
-                
                 reply = response.choices[0].message.content
-                return JsonResponse({"success": True, "reply": reply})
+                return JsonResponse({"success": True, "reply": reply.strip()})
             except Exception as e:
-                # Fallback on the rule-based system if the API call fails
-                print(f"OpenAI API Error: {e}")
-                pass
-                
-        # Fallback to Rule-based logic if API Key is not set or failed
-        reply = "I am an AI assistant! You can ask me about your Attendance, Results, Applying for Leave, or Paying Fees. How can I help you today?"
+                errors['OpenAI'] = f"Exception: {str(e)}"
+                print(f"OpenAI API Exception: {e}")
+
+        # 5. Fallback to Rule-based logic if no API key is available or all failed
+        user_message_lower = user_message.lower()
         
-        if any(word in user_message for word in ['attendance', 'present', 'absent']):
+        if errors:
+            reply = "I tried to contact the AI brain, but the API requests failed:\n"
+            for provider, err in errors.items():
+                try:
+                    # Clean up JSON formatting for readability if applicable
+                    import json
+                    parsed = json.loads(err.split(":", 1)[1])
+                    if 'error' in parsed and 'message' in parsed['error']:
+                        err = f"Error: {parsed['error']['message']}"
+                except:
+                    pass
+                reply += f"- **{provider}**: {err}\n"
+            reply += "\nMeanwhile, I can help you with local features like Attendance, Results, Leave, Fees, or Password. What can I do for you?"
+        else:
+            reply = "I am your Campus AI assistant! Please configure `OPENROUTER_API_KEY`, `GROQ_API_KEY`, `GEMINI_API_KEY`, or `OPENAI_API_KEY` in settings to activate the full AI brain! Meanwhile, I can help you with Attendance, Results, Applying for Leave, or Paying Fees. What can I help you with today?"
+        
+        if any(word in user_message_lower for word in ['attendance', 'present', 'absent']):
             reply = "You can view your subject-wise attendance by navigating to the 'View Attendance' tab on your dashboard sidebar. Pick the subject and date range to see detailed logs."
-        elif any(word in user_message for word in ['result', 'marks', 'score', 'grades', 'grade']):
+        elif any(word in user_message_lower for word in ['result', 'marks', 'score', 'grades', 'grade']):
             reply = "To check your marks, please visit the 'View Result' section in your left sidebar menu."
-        elif any(word in user_message for word in ['leave', 'holiday', 'absent', 'sick']):
+        elif any(word in user_message_lower for word in ['leave', 'holiday', 'absent', 'sick']):
             reply = "You can apply for leave in the 'Apply for Leave' section. Input the date range and reason, and your assigned staff member will review it."
-        elif any(word in user_message for word in ['fee', 'payment', 'pay', 'rupees', 'transactions']):
+        elif any(word in user_message_lower for word in ['fee', 'payment', 'pay', 'rupees', 'transactions']):
             reply = "Fees can be managed under 'Pay Fees'. You can see your total fees, check how much is pending, and make a payment from there directly."
-        elif any(word in user_message for word in ['certificate', 'degree', 'bonafide', 'document']):
+        elif any(word in user_message_lower for word in ['certificate', 'degree', 'bonafide', 'document']):
             reply = "You can request certificates like Bonafide, Transfer Certificate, or degree transcripts from the 'Apply Certificate' section on your dashboard."
-        elif any(word in user_message for word in ['hi', 'hello', 'hey', 'greetings']):
+        elif any(word in user_message_lower for word in ['hi', 'hello', 'hey', 'greetings']):
             reply = "Hello there! Welcome to the student chatbot. How can I assist you with CampusFlow today?"
-        elif any(word in user_message for word in ['thank', 'thanks', 'cool']):
+        elif any(word in user_message_lower for word in ['thank', 'thanks', 'cool']):
             reply = "You're very welcome! Let me know if you need anything else."
-        elif any(word in user_message for word in ['password', 'profile', 'name']):
+        elif any(word in user_message_lower for word in ['password', 'profile', 'name']):
             reply = "You can update your personal information or password by clicking the 'Update Profile' option under the gear icon in the top right navbar."
             
         return JsonResponse({"success": True, "reply": reply})

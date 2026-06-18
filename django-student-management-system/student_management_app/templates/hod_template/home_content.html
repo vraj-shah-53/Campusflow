@@ -17,7 +17,7 @@
             <p>Total Students</p>
           </div>
           <div class="icon">
-            <i class="ion ion-stats-bars"></i>
+            <i class="fas fa-user-graduate"></i>
           </div>
           <a href="{% url 'manage_student' %}" class="small-box-footer">More info <i
               class="fas fa-arrow-circle-right"></i></a>
@@ -33,7 +33,7 @@
             <p>Total Staffs</p>
           </div>
           <div class="icon">
-            <i class="ion ion-stats-bars"></i>
+            <i class="fas fa-chalkboard-teacher"></i>
           </div>
           <a href="{% url 'manage_staff' %}" class="small-box-footer">More info <i
               class="fas fa-arrow-circle-right"></i></a>
@@ -50,7 +50,7 @@
             <p>Total Courses</p>
           </div>
           <div class="icon">
-            <i class="ion ion-stats-bars"></i>
+            <i class="fas fa-university"></i>
           </div>
           <a href="{% url 'manage_course' %}" class="small-box-footer">More info <i
               class="fas fa-arrow-circle-right"></i></a>
@@ -66,7 +66,7 @@
             <p>Total Subjects</p>
           </div>
           <div class="icon">
-            <i class="ion ion-stats-bars"></i>
+            <i class="fas fa-book"></i>
           </div>
           <a href="{% url 'manage_subject' %}" class="small-box-footer">More info <i
               class="fas fa-arrow-circle-right"></i></a>
@@ -238,251 +238,250 @@
     // Helper function to generate N background colors
     function generateColors(numColors) {
       var colors = [];
-      var hardcodedColors = ['#f56954', '#00a65a', '#f39c12', '#00c0ef', '#3c8dbc', '#d2d6de'];
+      var hardcodedColors = ['#4f46e5', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#8b5cf6', '#3b82f6', '#f43f5e', '#14b8a6'];
 
       for (var i = 0; i < numColors; i++) {
-        if (i < hardcodedColors.length) {
-          colors.push(hardcodedColors[i]);
-        } else {
-          // Generate high contrast HSL colors for remaining
-          const hue = (i * 137.508) % 360; // Golden angle for even distribution
-          colors.push(`hsl(${hue}, 70%, 50%)`);
-        }
+        colors.push(hardcodedColors[i % hardcodedColors.length]);
       }
       return colors;
     }
-    var donutChartCanvas = $('#pieChart').get(0).getContext('2d')
+    
+    //-------------
+    //- PIE CHART (Students vs Staffs) -
+    //-------------
+    var pieChartCanvas = $('#pieChart').get(0).getContext('2d')
     var pieData = {
-      labels: [
-        'Students',
-        'Staffs',
-      ],
+      labels: ['Students', 'Staffs'],
       datasets: [
         {
           data: [{{ all_student_count }}, {{ staff_count }}],
-      backgroundColor: ['#f56954', '#00a65a'],
-  }
-        ]
+          backgroundColor: ['#6366f1', '#ec4899'],
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }
+      ]
+    }
+    var pieOptions = {
+      maintainAspectRatio: false,
+      responsive: true,
+      legend: {
+        labels: {
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontColor: '#475569',
+          boxWidth: 12
+        }
       }
-
-      //-------------
-      //- PIE CHART -
-      //-------------
-      // Get context with jQuery - using jQuery's .get() method.
-      var pieChartCanvas = $('#pieChart').get(0).getContext('2d')
-  var pieData = pieData;
-  var pieOptions = {
-    maintainAspectRatio: false,
-    responsive: true,
-  }
-  //Create pie or douhnut chart
-  // You can switch between pie and douhnut using the method below.
-  var pieChart = new Chart(pieChartCanvas, {
-    type: 'pie',
-    data: pieData,
-    options: pieOptions
-  })
-
-
-  // Get context with jQuery - using jQuery's .get() method.
-  var course_name_list = {{ course_name_list| safe }}
-  var subject_count_list = {{ subject_count_list| safe }}
-  var donutChartCanvas = $('#donutChart').get(0).getContext('2d')
-  var donutData = {
-    labels: course_name_list,
-    datasets: [
-      {
-        data: subject_count_list,
-        backgroundColor: generateColors(course_name_list.length),
-      }
-    ]
-  }
-  var donutOptions = {
-    maintainAspectRatio: false,
-    responsive: true,
-  }
-  //Create pie or douhnut chart
-  // You can switch between pie and douhnut using the method below.
-  var donutChart = new Chart(donutChartCanvas, {
-    type: 'doughnut',
-    data: donutData,
-    options: donutOptions
-  })
-
-
-  // Total Students in Each Course
-  //var donutChartCanvas = $('#pieChart2').get(0).getContext('2d')
-  var student_count_list_in_course = {{ student_count_list_in_course| safe }}
-  var pieData2 = {
-    labels: course_name_list,
-    datasets: [
-      {
-        data: student_count_list_in_course,
-        backgroundColor: generateColors(course_name_list.length),
-      }
-    ]
-  }
-
-  //-------------
-  //- PIE CHART -
-  //-------------
-  // Get context with jQuery - using jQuery's .get() method.
-  var pieChartCanvas2 = $('#pieChart2').get(0).getContext('2d')
-  var pieData2 = pieData2;
-  var pieOptions2 = {
-    maintainAspectRatio: false,
-    responsive: true,
-  }
-
-  var pieChart2 = new Chart(pieChartCanvas2, {
-    type: 'pie',
-    data: pieData2,
-    options: pieOptions2
-  })
-
-  // Total Students in Each Subject
-  var student_count_list_in_subject = {{ student_count_list_in_subject| safe }}
-  var subject_list = {{ subject_list| safe }}
-  var pieData3 = {
-    labels: subject_list,
-    datasets: [
-      {
-        data: student_count_list_in_subject,
-        backgroundColor: generateColors(subject_list.length),
-      }
-    ]
-  }
-
-  //-------------
-  //- PIE CHART -
-  //-------------
-  // Get context with jQuery - using jQuery's .get() method.
-  var pieChartCanvas3 = $('#pieChart3').get(0).getContext('2d')
-  var pieData3 = pieData3;
-  var pieOptions3 = {
-    maintainAspectRatio: false,
-    responsive: true,
-  }
-
-  var pieChart3 = new Chart(pieChartCanvas3, {
-    type: 'pie',
-    data: pieData3,
-    options: pieOptions3
-  })
-
-  //-------------
-  //- BAR CHART - Staff Attendance vs Leave
-  //-------------
-
-  var staff_attendance_present_list = {{ staff_attendance_present_list| safe }};
-  var staff_attendance_leave_list = {{ staff_attendance_leave_list| safe }};
-  var staff_name_list = {{ staff_name_list| safe }};
-
-  var areaChartData = {
-    labels: staff_name_list,
-    datasets: [
-      {
-        label: 'Leave',
-        backgroundColor: 'rgba(60,141,188,0.9)',
-        borderColor: 'rgba(60,141,188,0.8)',
-        pointRadius: false,
-        pointColor: '#3b8bba',
-        pointStrokeColor: 'rgba(60,141,188,1)',
-        pointHighlightFill: '#fff',
-        pointHighlightStroke: 'rgba(60,141,188,1)',
-        data: staff_attendance_leave_list
-      },
-      {
-        label: 'Attendance',
-        backgroundColor: 'rgba(210, 214, 222, 1)',
-        borderColor: 'rgba(210, 214, 222, 1)',
-        pointRadius: false,
-        pointColor: 'rgba(210, 214, 222, 1)',
-        pointStrokeColor: '#c1c7d1',
-        pointHighlightFill: '#fff',
-        pointHighlightStroke: 'rgba(220,220,220,1)',
-        data: staff_attendance_present_list
-      },
-    ]
-  }
-
-
-  var barChartCanvas = $('#barChart').get(0).getContext('2d')
-  var barChartData = jQuery.extend(true, {}, areaChartData)
-  var temp0 = areaChartData.datasets[0]
-  var temp1 = areaChartData.datasets[1]
-  barChartData.datasets[0] = temp1
-  barChartData.datasets[1] = temp0
-
-  var barChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    datasetFill: false
-  }
-
-  var barChart = new Chart(barChartCanvas, {
-    type: 'bar',
-    data: barChartData,
-    options: barChartOptions
-  })
-
-
-  //- BAR CHART - Student Attendance vs Leave
-  //-------------
-
-  var student_attendance_present_list = {{ student_attendance_present_list| safe }};
-  var student_attendance_leave_list = {{ student_attendance_leave_list| safe }};
-  var student_name_list = {{ student_name_list| safe }};
-
-  var areaChartData2 = {
-    labels: student_name_list,
-    datasets: [
-      {
-        label: 'Leave',
-        backgroundColor: 'rgba(60,141,188,0.9)',
-        borderColor: 'rgba(60,141,188,0.8)',
-        pointRadius: false,
-        pointColor: '#3b8bba',
-        pointStrokeColor: 'rgba(60,141,188,1)',
-        pointHighlightFill: '#fff',
-        pointHighlightStroke: 'rgba(60,141,188,1)',
-        data: student_attendance_leave_list
-      },
-      {
-        label: 'Attendance',
-        backgroundColor: 'rgba(210, 214, 222, 1)',
-        borderColor: 'rgba(210, 214, 222, 1)',
-        pointRadius: false,
-        pointColor: 'rgba(210, 214, 222, 1)',
-        pointStrokeColor: '#c1c7d1',
-        pointHighlightFill: '#fff',
-        pointHighlightStroke: 'rgba(220,220,220,1)',
-        data: student_attendance_present_list
-      },
-    ]
-  }
-
-
-  var barChartCanvas2 = $('#barChart2').get(0).getContext('2d')
-  var barChartData2 = jQuery.extend(true, {}, areaChartData2)
-  var temp02 = areaChartData2.datasets[0]
-  var temp12 = areaChartData2.datasets[1]
-  barChartData2.datasets[0] = temp12
-  barChartData2.datasets[1] = temp02
-
-  var barChartOptions2 = {
-    responsive: true,
-    maintainAspectRatio: false,
-    datasetFill: false
-  }
-
-  var barChart2 = new Chart(barChartCanvas2, {
-    type: 'bar',
-    data: barChartData2,
-    options: barChartOptions2
-  })
-
+    }
+    var pieChart = new Chart(pieChartCanvas, {
+      type: 'pie',
+      data: pieData,
+      options: pieOptions
     })
+
+    //-------------
+    //- DONUT CHART (Subjects in Each Course) -
+    //-------------
+    var course_name_list = {{ course_name_list| safe }}
+    var subject_count_list = {{ subject_count_list| safe }}
+    var donutChartCanvas = $('#donutChart').get(0).getContext('2d')
+    var donutData = {
+      labels: course_name_list,
+      datasets: [
+        {
+          data: subject_count_list,
+          backgroundColor: generateColors(course_name_list.length),
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }
+      ]
+    }
+    var donutOptions = {
+      maintainAspectRatio: false,
+      responsive: true,
+      cutoutPercentage: 65,
+      legend: {
+        labels: {
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontColor: '#475569',
+          boxWidth: 12
+        }
+      }
+    }
+    var donutChart = new Chart(donutChartCanvas, {
+      type: 'doughnut',
+      data: donutData,
+      options: donutOptions
+    })
+
+    //-------------
+    //- PIE CHART 2 (Students in Each Course) -
+    //-------------
+    var student_count_list_in_course = {{ student_count_list_in_course| safe }}
+    var pieChartCanvas2 = $('#pieChart2').get(0).getContext('2d')
+    var pieData2 = {
+      labels: course_name_list,
+      datasets: [
+        {
+          data: student_count_list_in_course,
+          backgroundColor: generateColors(course_name_list.length),
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }
+      ]
+    }
+    var pieOptions2 = {
+      maintainAspectRatio: false,
+      responsive: true,
+      legend: {
+        labels: {
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontColor: '#475569',
+          boxWidth: 12
+        }
+      }
+    }
+    var pieChart2 = new Chart(pieChartCanvas2, {
+      type: 'pie',
+      data: pieData2,
+      options: pieOptions2
+    })
+
+    //-------------
+    //- PIE CHART 3 (Students in Each Subject) -
+    //-------------
+    var student_count_list_in_subject = {{ student_count_list_in_subject| safe }}
+    var subject_list = {{ subject_list| safe }}
+    var pieChartCanvas3 = $('#pieChart3').get(0).getContext('2d')
+    var pieData3 = {
+      labels: subject_list,
+      datasets: [
+        {
+          data: student_count_list_in_subject,
+          backgroundColor: generateColors(subject_list.length),
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }
+      ]
+    }
+    var pieOptions3 = {
+      maintainAspectRatio: false,
+      responsive: true,
+      legend: {
+        labels: {
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontColor: '#475569',
+          boxWidth: 12
+        }
+      }
+    }
+    var pieChart3 = new Chart(pieChartCanvas3, {
+      type: 'pie',
+      data: pieData3,
+      options: pieOptions3
+    })
+
+    //-------------
+    //- BAR CHART (Staff Attendance vs Leave) -
+    //-------------
+    var staff_attendance_present_list = {{ staff_attendance_present_list| safe }};
+    var staff_attendance_leave_list = {{ staff_attendance_leave_list| safe }};
+    var staff_name_list = {{ staff_name_list| safe }};
+
+    var barChartCanvas = $('#barChart').get(0).getContext('2d')
+    var barChartData = {
+      labels: staff_name_list,
+      datasets: [
+        {
+          label: 'Attendance',
+          backgroundColor: 'rgba(16, 185, 129, 0.85)', // Emerald
+          borderColor: '#10b981',
+          borderWidth: 1,
+          data: staff_attendance_present_list
+        },
+        {
+          label: 'Leave',
+          backgroundColor: 'rgba(244, 63, 94, 0.85)', // Rose
+          borderColor: '#f43f5e',
+          borderWidth: 1,
+          data: staff_attendance_leave_list
+        }
+      ]
+    }
+
+    var barChartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        xAxes: [{
+          gridLines: {
+            display: false
+          },
+          ticks: {
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontColor: '#64748b'
+          }
+        }],
+        yAxes: [{
+          gridLines: {
+            color: '#f1f5f9',
+            zeroLineColor: '#f1f5f9'
+          },
+          ticks: {
+            beginAtZero: true,
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontColor: '#64748b'
+          }
+        }]
+      },
+      legend: {
+        labels: {
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontColor: '#475569',
+          boxWidth: 12
+        }
+      }
+    }
+
+    var barChart = new Chart(barChartCanvas, {
+      type: 'bar',
+      data: barChartData,
+      options: barChartOptions
+    })
+
+    //-------------
+    //- BAR CHART 2 (Student Attendance vs Leave) -
+    //-------------
+    var student_attendance_present_list = {{ student_attendance_present_list| safe }};
+    var student_attendance_leave_list = {{ student_attendance_leave_list| safe }};
+    var student_name_list = {{ student_name_list| safe }};
+
+    var barChartCanvas2 = $('#barChart2').get(0).getContext('2d')
+    var barChartData2 = {
+      labels: student_name_list,
+      datasets: [
+        {
+          label: 'Attendance',
+          backgroundColor: 'rgba(16, 185, 129, 0.85)', // Emerald
+          borderColor: '#10b981',
+          borderWidth: 1,
+          data: student_attendance_present_list
+        },
+        {
+          label: 'Leave',
+          backgroundColor: 'rgba(244, 63, 94, 0.85)', // Rose
+          borderColor: '#f43f5e',
+          borderWidth: 1,
+          data: student_attendance_leave_list
+        }
+      ]
+    }
+
+    var barChart2 = new Chart(barChartCanvas2, {
+      type: 'bar',
+      data: barChartData2,
+      options: barChartOptions
+    })
+  })
 </script>
 
 {% endblock custom_js %}

@@ -5,12 +5,16 @@ from .import HodViews, StaffViews, StudentViews
 
 
 urlpatterns = [
-    path('', views.loginPage, name="login"),
+    path('', views.entrance, name="entrance"),
+    path('login/', views.loginPage, name="login"),
+    path('login/<str:role>/', views.loginPage, name="login_with_role"),
     # path('accounts/', include('django.contrib.auth.urls')),
     path('doLogin/', views.doLogin, name="doLogin"),
     path('get_user_details/', views.get_user_details, name="get_user_details"),
     path('logout_user/', views.logout_user, name="logout_user"),
     path('admin_home/', HodViews.admin_home, name="admin_home"),
+    path('admin_register/', views.admin_register, name="admin_register"),
+    path('do_admin_register/', views.do_admin_register, name="do_admin_register"),
     path('add_staff/', HodViews.add_staff, name="add_staff"),
     path('add_staff_save/', HodViews.add_staff_save, name="add_staff_save"),
     path('manage_staff/', HodViews.manage_staff, name="manage_staff"),
@@ -58,6 +62,8 @@ urlpatterns = [
     path('admin_get_attendance_student/', HodViews.admin_get_attendance_student, name="admin_get_attendance_student"),
     path('admin_profile/', HodViews.admin_profile, name="admin_profile"),
     path('admin_profile_update/', HodViews.admin_profile_update, name="admin_profile_update"),
+    path('college_setting/', HodViews.college_setting, name="college_setting"),
+    path('college_setting_save/', HodViews.college_setting_save, name="college_setting_save"),
     
     # New Admin Features: Fee Tracking and Certificates
     path('admin_pending_fees/', HodViews.admin_pending_fees, name="admin_pending_fees"),

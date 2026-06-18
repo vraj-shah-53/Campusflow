@@ -21,11 +21,15 @@ class AddStudentForm(forms.Form):
     profile_pic = forms.FileField(label="Profile Pic", required=False, widget=forms.FileInput(attrs={"class":"form-control"}))
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super(AddStudentForm, self).__init__(*args, **kwargs)
         
         # Determine Courses dynamically
         try:
-            courses = Courses.objects.all()
+            if user:
+                courses = Courses.objects.filter(admin_creator=user)
+            else:
+                courses = Courses.objects.all()
             course_list = []
             for course in courses:
                 single_course = (course.id, course.course_name)
@@ -35,7 +39,10 @@ class AddStudentForm(forms.Form):
         
         # Determine Session Years dynamically
         try:
-            session_years = SessionYearModel.objects.all()
+            if user:
+                session_years = SessionYearModel.objects.filter(admin_creator=user)
+            else:
+                session_years = SessionYearModel.objects.all()
             session_year_list = []
             for session_year in session_years:
                 single_session_year = (session_year.id, str(session_year.session_start_year)+" to "+str(session_year.session_end_year))
@@ -67,11 +74,15 @@ class EditStudentForm(forms.Form):
     profile_pic = forms.FileField(label="Profile Pic", required=False, widget=forms.FileInput(attrs={"class":"form-control"}))
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super(EditStudentForm, self).__init__(*args, **kwargs)
         
         # Determine Courses dynamically
         try:
-            courses = Courses.objects.all()
+            if user:
+                courses = Courses.objects.filter(admin_creator=user)
+            else:
+                courses = Courses.objects.all()
             course_list = []
             for course in courses:
                 single_course = (course.id, course.course_name)
@@ -81,7 +92,10 @@ class EditStudentForm(forms.Form):
 
         # Determine Session Years dynamically
         try:
-            session_years = SessionYearModel.objects.all()
+            if user:
+                session_years = SessionYearModel.objects.filter(admin_creator=user)
+            else:
+                session_years = SessionYearModel.objects.all()
             session_year_list = []
             for session_year in session_years:
                 single_session_year = (session_year.id, str(session_year.session_start_year)+" to "+str(session_year.session_end_year))
@@ -96,4 +110,4 @@ class EditStudentForm(forms.Form):
         
         self.fields['course_id'].choices = course_list
         self.fields['session_year_id'].choices = session_year_list
-        self.fields['gender'].choices = gender_list
+        self.fields['gender'].choices = gender_list

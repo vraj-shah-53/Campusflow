@@ -20,7 +20,7 @@
                     </div>
                     <!-- /.card-header -->
                     <!-- form start -->
-                    <form role="form" method="POST" action="{% url 'add_staff_save' %}">
+                    <form role="form" method="POST" action="{% url 'add_staff_save' %}" enctype="multipart/form-data">
                         {% csrf_token %}
 
                         
@@ -79,6 +79,19 @@
                             <div class="form-group">
                                 <label>Address</label>
                                 <textarea class="form-control" name="address" placeholder="Address"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select class="form-control" name="gender">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Profile Picture</label>
+                                <input type="file" class="form-control" name="profile_pic">
                             </div>
 
                             

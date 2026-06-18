@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+  body.entrance-body {
+    background: radial-gradient(circle at 10% 20%, #f4f6f9 0%, #edf2f7 90%);
+    font-family: 'Outfit', sans-serif;
+    color: #2d3748;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+    position: relative;
+    margin: 0;
+    padding: 20px;
+  }
+
+  /* Animated Background Blobs */
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: 0;
+    opacity: 0.06;
+    animation: float 12s infinite alternate ease-in-out;
+  }
+
+  .blob-1 {
+    width: 400px;
+    height: 400px;
+    background: #4e54c8;
+    top: -100px;
+    left: -100px;
+  }
+
+  .blob-2 {
+    width: 500px;
+    height: 500px;
+    background: #00f2fe;
+    bottom: -150px;
+    right: -100px;
+    animation-delay: -4s;
+  }
+
+  .blob-3 {
+    width: 300px;
+    height: 300px;
+    background: #ff007f;
+    top: 50%;
+    left: 60%;
+    animation-delay: -8s;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0px) scale(1); }
+    100% { transform: translateY(50px) scale(1.1); }
+  }
+
+  .entrance-container {
+    max-width: 1200px;
+    width: 100%;
+    z-index: 1;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .brand-header {
+    margin-bottom: 50px;
+  }
+
+  .brand-logo {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #3182ce 0%, #311b92 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+    margin: 0 0 10px 0;
+    display: inline-block;
+  }
+
+  .brand-tagline {
+    font-size: 1.2rem;
+    color: #4a5568;
+    font-weight: 400;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .roles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+  }
+
+  .role-card {
+    background: #ffffff;
+    border: 1px rgba(0, 0, 0, 0.05) solid;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+    border-radius: 24px;
+    padding: 40px 30px;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .role-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.01) 0%, rgba(0, 0, 0, 0) 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .role-card:hover {
+    transform: translateY(-10px);
+    border-color: rgba(99, 102, 241, 0.25);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06), 0 0 30px rgba(99, 102, 241, 0.05);
+  }
+
+  .role-card:hover::before {
+    opacity: 1;
+  }
+
+  .role-icon-wrapper {
+    width: 90px;
+    height: 90px;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 2.2rem;
+    transition: all 0.4s ease;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+
+  .role-card[data-role="admin"] .role-icon-wrapper {
+    color: #ff5e62;
+    background: rgba(255, 94, 98, 0.08);
+    border-color: rgba(255, 94, 98, 0.15);
+  }
+  .role-card[data-role="faculty"] .role-icon-wrapper {
+    color: #3182ce;
+    background: rgba(49, 130, 206, 0.08);
+    border-color: rgba(49, 130, 206, 0.15);
+  }
+  .role-card[data-role="student"] .role-icon-wrapper {
+    color: #b180ff;
+    background: rgba(177, 128, 255, 0.08);
+    border-color: rgba(177, 128, 255, 0.15);
+  }
+
+  .role-card:hover .role-icon-wrapper {
+    transform: scale(1.1) rotate(5deg);
+  }
+
+  .role-card[data-role="admin"]:hover .role-icon-wrapper {
+    box-shadow: 0 0 20px rgba(255, 94, 98, 0.2);
+  }
+  .role-card[data-role="faculty"]:hover .role-icon-wrapper {
+    box-shadow: 0 0 20px rgba(49, 130, 206, 0.2);
+  }
+  .role-card[data-role="student"]:hover .role-icon-wrapper {
+    box-shadow: 0 0 20px rgba(177, 128, 255, 0.2);
+  }
+
+  .role-title {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+    color: #1a202c;
+  }
+
+  .role-desc {
+    font-size: 0.95rem;
+    color: #4a5568;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    flex-grow: 1;
+  }
+
+  .role-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 12px 35px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .role-card[data-role="admin"] .role-btn {
+    background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+    color: white;
+  }
+  .role-card[data-role="faculty"] .role-btn {
+    background: linear-gradient(135deg, #3182ce 0%, #4e54c8 100%);
+    color: white;
+  }
+  .role-card[data-role="student"] .role-btn {
+    background: linear-gradient(135deg, #b180ff 0%, #89216b 100%);
+    color: white;
+  }
+
+  .role-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    opacity: 0.95;
+  }
+
+  footer.entrance-footer {
+    margin-top: 80px;
+    color: #718096;
+    font-size: 0.85rem;
+    font-weight: 400;
+    z-index: 1;
+  }
+</style>
+
+<body class="entrance-body">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="entrance-container">
+    <div class="brand-header">
+      <h1 class="brand-logo">CampusFlow</h1>
+      <p class="brand-tagline">Welcome to the intelligent campus management system. Select your role below to access your portal.</p>
+    </div>
+
+    <div class="roles-grid">
+      <!-- Admin Card -->
+      <div class="role-card" data-role="admin" onclick="window.location.href='{% url 'login_with_role' role='admin' %}'">
+        <div class="role-icon-wrapper">
+          <i class="fas fa-user-shield"></i>
+        </div>
+        <h3 class="role-title">Administrator</h3>
+        <p class="role-desc">Access HOD portal. Create new workspaces, manage courses, sessions, faculty, students, approve leaves, and view certification applications.</p>
+        <a href="{% url 'login_with_role' role='admin' %}" class="role-btn text-center">Admin Portal</a>
+      </div>
+
+      <!-- Faculty Card -->
+      <div class="role-card" data-role="faculty" onclick="window.location.href='{% url 'login_with_role' role='faculty' %}'">
+        <div class="role-icon-wrapper">
+          <i class="fas fa-chalkboard-teacher"></i>
+        </div>
+        <h3 class="role-title">Faculty Member</h3>
+        <p class="role-desc">Access teacher portal. Record and update student attendance, submit grades/exam results, submit feedback, and request leave reports.</p>
+        <a href="{% url 'login_with_role' role='faculty' %}" class="role-btn text-center">Faculty Portal</a>
+      </div>
+
+      <!-- Student Card -->
+      <div class="role-card" data-role="student" onclick="window.location.href='{% url 'login_with_role' role='student' %}'">
+        <div class="role-icon-wrapper">
+          <i class="fas fa-user-graduate"></i>
+        </div>
+        <h3 class="role-title">Student</h3>
+        <p class="role-desc">Access student portal. Monitor attendance details, view academic grades/results, make online fee payments, and chat with the AI helper.</p>
+        <a href="{% url 'login_with_role' role='student' %}" class="role-btn text-center">Student Portal</a>
+      </div>
+    </div>
+
+    <footer class="entrance-footer">
+      <p>&copy; 2026 CampusFlow. All rights reserved.</p>
+    </footer>
+  </div>
+</body>
+{% endblock %}

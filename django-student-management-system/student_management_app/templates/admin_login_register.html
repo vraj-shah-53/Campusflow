@@ -1,0 +1,412 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+  body.admin-auth-body {
+    background: radial-gradient(circle at 10% 20%, #f4f6f9 0%, #edf2f7 90%);
+    font-family: 'Outfit', sans-serif;
+    color: #2d3748;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Animated background blobs */
+  .auth-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: 0;
+    opacity: 0.05;
+    animation: auth-float 10s infinite alternate ease-in-out;
+  }
+
+  .auth-blob-1 {
+    width: 350px;
+    height: 350px;
+    background: #ff5e62;
+    top: -50px;
+    left: -50px;
+  }
+
+  .auth-blob-2 {
+    width: 450px;
+    height: 450px;
+    background: #ff9966;
+    bottom: -100px;
+    right: -50px;
+    animation-delay: -5s;
+  }
+
+  @keyframes auth-float {
+    0% { transform: translateY(0) scale(1); }
+    100% { transform: translateY(30px) scale(1.05); }
+  }
+
+  .auth-card {
+    background: #ffffff;
+    border: 1px rgba(0, 0, 0, 0.05) solid;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 500px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+    z-index: 1;
+    transition: all 0.3s ease;
+  }
+
+  .auth-logo {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+    letter-spacing: -0.5px;
+    text-align: center;
+    background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .auth-subtitle {
+    font-size: 0.95rem;
+    color: #4a5568;
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 400;
+  }
+
+  /* Nav Tabs custom style */
+  .auth-tabs {
+    display: flex;
+    border: 1px solid #e2e8f0;
+    background: #f7fafc;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 30px;
+  }
+
+  .auth-tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #718096;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .auth-tab.active {
+    background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(255, 94, 98, 0.15);
+  }
+
+  .auth-form-panel {
+    display: none;
+  }
+
+  .auth-form-panel.active {
+    display: block;
+    animation: fadeIn 0.4s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .form-group-custom {
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .form-group-custom label {
+    font-size: 0.85rem;
+    color: #4a5568;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+    text-align: left;
+  }
+
+  .input-icon-wrapper {
+    position: relative;
+  }
+
+  .input-icon-wrapper i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #718096;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+  }
+
+  .input-custom {
+    background: #f7fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #2d3748 !important;
+    border-radius: 12px !important;
+    padding: 12px 15px 12px 45px !important;
+    width: 100%;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    height: auto !important;
+  }
+
+  .input-custom:focus {
+    background: #ffffff !important;
+    border-color: rgba(255, 94, 98, 0.6) !important;
+    box-shadow: 0 0 10px rgba(255, 94, 98, 0.2) !important;
+    outline: none;
+  }
+
+  .input-custom:focus + i {
+    color: #ff5e62;
+  }
+
+  .submit-btn-custom {
+    background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    padding: 14px;
+    width: 100%;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 94, 98, 0.15);
+    margin-top: 10px;
+  }
+
+  .submit-btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 94, 98, 0.25);
+    opacity: 0.95;
+  }
+
+  .submit-btn-custom:active {
+    transform: translateY(0);
+  }
+
+  .back-to-home {
+    display: inline-block;
+    margin-top: 25px;
+    font-size: 0.85rem;
+    color: #718096;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .back-to-home:hover {
+    color: #ff5e62;
+  }
+
+  /* Alerts Styling */
+  .alert-custom {
+    background: rgba(255, 94, 98, 0.15);
+    border: 1px solid rgba(255, 94, 98, 0.3);
+    color: #ff8a8c;
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .alert-custom-success {
+    background: rgba(72, 187, 120, 0.15);
+    border: 1px solid rgba(72, 187, 120, 0.3);
+    color: #8ce9a4;
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .password-input {
+    padding-right: 45px !important;
+  }
+
+  .password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #718096;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+    z-index: 10;
+  }
+
+  .password-toggle:hover {
+    color: #ff5e62 !important;
+  }
+</style>
+
+<body class="admin-auth-body">
+  <div class="auth-blob auth-blob-1"></div>
+  <div class="auth-blob auth-blob-2"></div>
+
+  <div class="auth-card">
+    <div class="auth-logo">CampusFlow</div>
+    <div class="auth-subtitle">Administrator Access Portal</div>
+
+    <!-- Toggles -->
+    <div class="auth-tabs">
+      <div class="auth-tab {% if not register_active %}active{% endif %}" id="tab-login" onclick="switchTab('login')">Sign In</div>
+      <div class="auth-tab {% if register_active %}active{% endif %}" id="tab-register" onclick="switchTab('register')">Register</div>
+    </div>
+
+    <!-- Messages / Errors -->
+    {% if messages %}
+      {% for message in messages %}
+        {% if message.tags == "error" %}
+          <div class="alert-custom">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ message }}</span>
+          </div>
+        {% elif message.tags == "success" %}
+          <div class="alert-custom-success">
+            <i class="fas fa-check-circle"></i>
+            <span>{{ message }}</span>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    <!-- Login Form -->
+    <div class="auth-form-panel {% if not register_active %}active{% endif %}" id="panel-login">
+      <form action="{% url 'doLogin' %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="role" value="admin">
+        
+        <div class="form-group-custom">
+          <label>Email Address</label>
+          <div class="input-icon-wrapper">
+            <input type="email" class="form-control input-custom" placeholder="admin@example.com" name="email" required>
+            <i class="fas fa-envelope"></i>
+          </div>
+        </div>
+
+        <div class="form-group-custom">
+          <label>Password</label>
+          <div class="input-icon-wrapper">
+            <input type="password" class="form-control input-custom password-input" placeholder="••••••••" name="password" required>
+            <i class="fas fa-lock"></i>
+            <i class="fas fa-eye password-toggle" onclick="togglePassword(this)"></i>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn-custom">Sign In</button>
+      </form>
+    </div>
+
+    <!-- Register Form -->
+    <div class="auth-form-panel {% if register_active %}active{% endif %}" id="panel-register">
+      <form action="{% url 'do_admin_register' %}" method="POST">
+        {% csrf_token %}
+        
+        <div class="form-group-custom">
+          <label>Username</label>
+          <div class="input-icon-wrapper">
+            <input type="text" class="form-control input-custom" placeholder="admin_username" name="username" required>
+            <i class="fas fa-user"></i>
+          </div>
+        </div>
+
+        <div class="form-group-custom">
+          <label>Email Address</label>
+          <div class="input-icon-wrapper">
+            <input type="email" class="form-control input-custom" placeholder="admin@example.com" name="email" required>
+            <i class="fas fa-envelope"></i>
+          </div>
+        </div>
+
+        <div class="form-group-custom">
+          <label>First Name</label>
+          <div class="input-icon-wrapper">
+            <input type="text" class="form-control input-custom" placeholder="First Name" name="first_name">
+            <i class="fas fa-user-tag"></i>
+          </div>
+        </div>
+
+        <div class="form-group-custom">
+          <label>Last Name</label>
+          <div class="input-icon-wrapper">
+            <input type="text" class="form-control input-custom" placeholder="Last Name" name="last_name">
+            <i class="fas fa-user-tag"></i>
+          </div>
+        </div>
+
+        <div class="form-group-custom">
+          <label>Password</label>
+          <div class="input-icon-wrapper">
+            <input type="password" class="form-control input-custom password-input" placeholder="••••••••" name="password" required>
+            <i class="fas fa-lock"></i>
+            <i class="fas fa-eye password-toggle" onclick="togglePassword(this)"></i>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn-custom">Register Workspace</button>
+      </form>
+    </div>
+
+    <a href="{% url 'entrance' %}" class="back-to-home">
+      <i class="fas fa-arrow-left"></i> Back to roles select
+    </a>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      // Deactivate all
+      document.getElementById('tab-login').classList.remove('active');
+      document.getElementById('tab-register').classList.remove('active');
+      document.getElementById('panel-login').classList.remove('active');
+      document.getElementById('panel-register').classList.remove('active');
+
+      // Activate selected
+      if (tab === 'login') {
+        document.getElementById('tab-login').classList.add('active');
+        document.getElementById('panel-login').classList.add('active');
+      } else if (tab === 'register') {
+        document.getElementById('tab-register').classList.add('active');
+        document.getElementById('panel-register').classList.add('active');
+      }
+    }
+
+    function togglePassword(el) {
+      const wrapper = el.closest('.input-icon-wrapper');
+      const input = wrapper.querySelector('input');
+      if (input.type === 'password') {
+        input.type = 'text';
+        el.classList.remove('fa-eye');
+        el.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        el.classList.remove('fa-eye-slash');
+        el.classList.add('fa-eye');
+      }
+    }
+  </script>
+</body>
+{% endblock %}

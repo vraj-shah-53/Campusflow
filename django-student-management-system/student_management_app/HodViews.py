@@ -7,18 +7,18 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers
 import json
 
-from student_management_app.models import CustomUser, Staffs, Courses, Subjects, Students, SessionYearModel, FeedBackStudent, FeedBackStaffs, LeaveReportStudent, LeaveReportStaff, Attendance, AttendanceReport, FeePaymentHistory, CertificateApplication
+from student_management_app.models import CustomUser, Staffs, Courses, Subjects, Students, SessionYearModel, FeedBackStudent, FeedBackStaffs, LeaveReportStudent, LeaveReportStaff, Attendance, AttendanceReport, FeePaymentHistory, CertificateApplication, CollegeSetting
 from .forms import AddStudentForm, EditStudentForm
 
 
 def admin_home(request):
-    all_student_count = Students.objects.all().count()
-    subject_count = Subjects.objects.all().count()
-    course_count = Courses.objects.all().count()
-    staff_count = Staffs.objects.all().count()
+    all_student_count = Students.objects.filter(admin_creator=request.user).count()
+    subject_count = Subjects.objects.filter(course_id__admin_creator=request.user).count()
+    course_count = Courses.objects.filter(admin_creator=request.user).count()
+    staff_count = Staffs.objects.filter(admin_creator=request.user).count()
 
     # Total Subjects and students in Each Course
-    course_all = Courses.objects.all()
+    course_all = Courses.objects.filter(admin_creator=request.user)
     course_name_list = []
     subject_count_list = []
     student_count_list_in_course = []
@@ -30,7 +30,7 @@ def admin_home(request):
         subject_count_list.append(subjects)
         student_count_list_in_course.append(students)
     
-    subject_all = Subjects.objects.all()
+    subject_all = Subjects.objects.filter(course_id__admin_creator=request.user)
     subject_list = []
     student_count_list_in_subject = []
     for subject in subject_all:
@@ -44,7 +44,7 @@ def admin_home(request):
     staff_attendance_leave_list=[]
     staff_name_list=[]
 
-    staffs = Staffs.objects.all()
+    staffs = Staffs.objects.filter(admin_creator=request.user)
     for staff in staffs:
         subject_ids = Subjects.objects.filter(staff_id=staff.admin.id)
         attendance = Attendance.objects.filter(subject_id__in=subject_ids).count()
@@ -58,7 +58,7 @@ def admin_home(request):
     student_attendance_leave_list=[]
     student_name_list=[]
 
-    students = Students.objects.all()
+    students = Students.objects.filter(admin_creator=request.user)
     for student in students:
         attendance = AttendanceReport.objects.filter(student_id=student.id, status=True).count()
         absent = AttendanceReport.objects.filter(student_id=student.id, status=False).count()
@@ -103,10 +103,21 @@ def add_staff_save(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
         address = request.POST.get('address')
+        gender = request.POST.get('gender', '')
+
+        profile_pic_url = None
+        if len(request.FILES) != 0:
+            profile_pic = request.FILES['profile_pic']
+            fs = FileSystemStorage()
+            filename = fs.save(profile_pic.name, profile_pic)
+            profile_pic_url = filename
 
         try:
             user = CustomUser.objects.create_user(username=username, password=password, email=email, first_name=first_name, last_name=last_name, user_type=2)
             user.staffs.address = address
+            user.staffs.gender = gender
+            user.staffs.profile_pic = profile_pic_url
+            user.staffs.admin_creator = request.user
             user.save()
             messages.success(request, "Staff Added Successfully!")
             return redirect('add_staff')
@@ -117,7 +128,7 @@ def add_staff_save(request):
 
 
 def manage_staff(request):
-    staffs = Staffs.objects.all()
+    staffs = Staffs.objects.filter(admin_creator=request.user)
     context = {
         "staffs": staffs
     }
@@ -144,6 +155,14 @@ def edit_staff_save(request):
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
         address = request.POST.get('address')
+        gender = request.POST.get('gender', '')
+
+        profile_pic_url = None
+        if len(request.FILES) != 0:
+            profile_pic = request.FILES['profile_pic']
+            fs = FileSystemStorage()
+            filename = fs.save(profile_pic.name, profile_pic)
+            profile_pic_url = filename
 
         try:
             # INSERTING into Customuser Model
@@ -157,6 +176,9 @@ def edit_staff_save(request):
             # INSERTING into Staff Model
             staff_model = Staffs.objects.get(admin=staff_id)
             staff_model.address = address
+            staff_model.gender = gender
+            if profile_pic_url != None:
+                staff_model.profile_pic = profile_pic_url
             staff_model.save()
 
             messages.success(request, "Staff Updated Successfully.")
@@ -193,7 +215,7 @@ def add_course_save(request):
         course = request.POST.get('course')
         course_fee = request.POST.get('course_fee', 0)
         try:
-            course_model = Courses(course_name=course, course_fee=course_fee)
+            course_model = Courses(course_name=course, course_fee=course_fee, admin_creator=request.user)
             course_model.save()
             messages.success(request, "Course Added Successfully!")
             return redirect('add_course')
@@ -203,7 +225,7 @@ def add_course_save(request):
 
 
 def manage_course(request):
-    courses = Courses.objects.all()
+    courses = Courses.objects.filter(admin_creator=request.user)
     context = {
         "courses": courses
     }
@@ -211,7 +233,7 @@ def manage_course(request):
 
 
 def edit_course(request, course_id):
-    course = Courses.objects.get(id=course_id)
+    course = Courses.objects.get(id=course_id, admin_creator=request.user)
     context = {
         "course": course,
         "id": course_id
@@ -253,7 +275,7 @@ def delete_course(request, course_id):
 
 
 def manage_session(request):
-    session_years = SessionYearModel.objects.all()
+    session_years = SessionYearModel.objects.filter(admin_creator=request.user)
     context = {
         "session_years": session_years
     }
@@ -273,7 +295,7 @@ def add_session_save(request):
         session_end_year = request.POST.get('session_end_year')
 
         try:
-            sessionyear = SessionYearModel(session_start_year=session_start_year, session_end_year=session_end_year)
+            sessionyear = SessionYearModel(session_start_year=session_start_year, session_end_year=session_end_year, admin_creator=request.user)
             sessionyear.save()
             messages.success(request, "Session Year added Successfully!")
             return redirect("add_session")
@@ -324,7 +346,7 @@ def delete_session(request, session_id):
 
 
 def add_student(request):
-    form = AddStudentForm()
+    form = AddStudentForm(user=request.user)
     context = {
         "form": form
     }
@@ -338,7 +360,7 @@ def add_student_save(request):
         messages.error(request, "Invalid Method")
         return redirect('add_student')
     else:
-        form = AddStudentForm(request.POST, request.FILES)
+        form = AddStudentForm(request.POST, request.FILES, user=request.user)
 
         if form.is_valid():
             first_name = form.cleaned_data['first_name']
@@ -358,7 +380,7 @@ def add_student_save(request):
                 profile_pic = request.FILES['profile_pic']
                 fs = FileSystemStorage()
                 filename = fs.save(profile_pic.name, profile_pic)
-                profile_pic_url = fs.url(filename)
+                profile_pic_url = filename
             else:
                 profile_pic_url = None
 
@@ -375,6 +397,7 @@ def add_student_save(request):
 
                 user.students.gender = gender
                 user.students.profile_pic = profile_pic_url
+                user.students.admin_creator = request.user
                 user.save()
                 messages.success(request, "Student Added Successfully!")
                 return redirect('add_student')
@@ -386,7 +409,7 @@ def add_student_save(request):
 
 
 def manage_student(request):
-    students = Students.objects.all()
+    students = Students.objects.filter(admin_creator=request.user)
     context = {
         "students": students
     }
@@ -397,17 +420,17 @@ def edit_student(request, student_id):
     # Adding Student ID into Session Variable
     request.session['student_id'] = student_id
 
-    student = Students.objects.get(admin=student_id)
-    form = EditStudentForm()
+    student = Students.objects.get(admin=student_id, admin_creator=request.user)
+    form = EditStudentForm(user=request.user)
     # Filling the form with Data from Database
     form.fields['email'].initial = student.admin.email
     form.fields['username'].initial = student.admin.username
     form.fields['first_name'].initial = student.admin.first_name
     form.fields['last_name'].initial = student.admin.last_name
     form.fields['address'].initial = student.address
-    form.fields['course_id'].initial = student.course_id.id
+    form.fields['course_id'].initial = student.course_id.id if student.course_id else None
     form.fields['gender'].initial = student.gender
-    form.fields['session_year_id'].initial = student.session_year_id.id
+    form.fields['session_year_id'].initial = student.session_year_id.id if student.session_year_id else None
 
     context = {
         "id": student_id,
@@ -425,7 +448,7 @@ def edit_student_save(request):
         if student_id == None:
             return redirect('/manage_student')
 
-        form = EditStudentForm(request.POST, request.FILES)
+        form = EditStudentForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             email = form.cleaned_data['email']
             username = form.cleaned_data['username']
@@ -443,7 +466,7 @@ def edit_student_save(request):
                 profile_pic = request.FILES['profile_pic']
                 fs = FileSystemStorage()
                 filename = fs.save(profile_pic.name, profile_pic)
-                profile_pic_url = fs.url(filename)
+                profile_pic_url = filename
             else:
                 profile_pic_url = None
 
@@ -494,8 +517,8 @@ def delete_student(request, student_id):
 
 
 def add_subject(request):
-    courses = Courses.objects.all()
-    staffs = CustomUser.objects.filter(user_type='2')
+    courses = Courses.objects.filter(admin_creator=request.user)
+    staffs = CustomUser.objects.filter(user_type='2', staffs__admin_creator=request.user)
     context = {
         "courses": courses,
         "staffs": staffs
@@ -528,7 +551,7 @@ def add_subject_save(request):
 
 
 def manage_subject(request):
-    subjects = Subjects.objects.all()
+    subjects = Subjects.objects.filter(course_id__admin_creator=request.user)
     context = {
         "subjects": subjects
     }
@@ -537,8 +560,8 @@ def manage_subject(request):
 
 def edit_subject(request, subject_id):
     subject = Subjects.objects.get(id=subject_id)
-    courses = Courses.objects.all()
-    staffs = CustomUser.objects.filter(user_type='2')
+    courses = Courses.objects.filter(admin_creator=request.user)
+    staffs = CustomUser.objects.filter(user_type='2', staffs__admin_creator=request.user)
     context = {
         "subject": subject,
         "courses": courses,
@@ -613,7 +636,7 @@ def check_username_exist(request):
 
 
 def student_feedback_message(request):
-    feedbacks = FeedBackStudent.objects.all()
+    feedbacks = FeedBackStudent.objects.filter(student_id__admin_creator=request.user)
     context = {
         "feedbacks": feedbacks
     }
@@ -636,7 +659,7 @@ def student_feedback_message_reply(request):
 
 
 def staff_feedback_message(request):
-    feedbacks = FeedBackStaffs.objects.all()
+    feedbacks = FeedBackStaffs.objects.filter(staff_id__admin_creator=request.user)
     context = {
         "feedbacks": feedbacks
     }
@@ -659,7 +682,7 @@ def staff_feedback_message_reply(request):
 
 
 def student_leave_view(request):
-    leaves = LeaveReportStudent.objects.all()
+    leaves = LeaveReportStudent.objects.filter(student_id__admin_creator=request.user)
     context = {
         "leaves": leaves
     }
@@ -680,7 +703,7 @@ def student_leave_reject(request, leave_id):
 
 
 def staff_leave_view(request):
-    leaves = LeaveReportStaff.objects.all()
+    leaves = LeaveReportStaff.objects.filter(staff_id__admin_creator=request.user)
     context = {
         "leaves": leaves
     }
@@ -702,8 +725,8 @@ def staff_leave_reject(request, leave_id):
 
 
 def admin_view_attendance(request):
-    subjects = Subjects.objects.all()
-    session_years = SessionYearModel.objects.all()
+    subjects = Subjects.objects.filter(course_id__admin_creator=request.user)
+    session_years = SessionYearModel.objects.filter(admin_creator=request.user)
     context = {
         "subjects": subjects,
         "session_years": session_years
@@ -771,6 +794,13 @@ def admin_profile_update(request):
         last_name = request.POST.get('last_name')
         password = request.POST.get('password')
 
+        profile_pic_url = None
+        if len(request.FILES) != 0:
+            profile_pic = request.FILES['profile_pic']
+            fs = FileSystemStorage()
+            filename = fs.save(profile_pic.name, profile_pic)
+            profile_pic_url = filename
+
         try:
             customuser = CustomUser.objects.get(id=request.user.id)
             customuser.first_name = first_name
@@ -778,6 +808,11 @@ def admin_profile_update(request):
             if password != None and password != "":
                 customuser.set_password(password)
             customuser.save()
+
+            if profile_pic_url != None:
+                customuser.adminhod.profile_pic = profile_pic_url
+                customuser.adminhod.save()
+
             messages.success(request, "Profile Updated Successfully")
             return redirect('admin_profile')
         except:
@@ -786,12 +821,17 @@ def admin_profile_update(request):
 
 
 def admin_pending_fees(request):
-    students = Students.objects.all()
+    students = Students.objects.filter(admin_creator=request.user)
     student_fee_data = []
     
     for student in students:
         course = student.course_id
-        total_fee = course.course_fee
+        if course:
+            total_fee = course.course_fee
+            course_name = course.course_name
+        else:
+            total_fee = 0
+            course_name = "N/A"
         
         # Calculate Paid Fee
         payment_history = FeePaymentHistory.objects.filter(student_id=student.id)
@@ -805,7 +845,7 @@ def admin_pending_fees(request):
         if pending_fee > 0:
             student_fee_data.append({
                 "student": student,
-                "course": course.course_name,
+                "course": course_name,
                 "total_fee": total_fee,
                 "paid_fee": paid_fee,
                 "pending_fee": pending_fee
@@ -818,7 +858,7 @@ def admin_pending_fees(request):
 
 
 def admin_student_certification(request):
-    applications = CertificateApplication.objects.all().order_by('-created_at')
+    applications = CertificateApplication.objects.filter(student_id__admin_creator=request.user).order_by('-created_at')
     
     context = {
         "applications": applications
@@ -851,6 +891,44 @@ def staff_profile(request):
 
 def student_profile(requtest):
     pass
+
+
+def college_setting(request):
+    setting = CollegeSetting.objects.filter(admin_creator=request.user).first()
+    context = {
+        "setting": setting
+    }
+    return render(request, "hod_template/college_setting.html", context)
+
+
+def college_setting_save(request):
+    if request.method != "POST":
+        return HttpResponse("<h2>Method Not Allowed</h2>")
+    else:
+        college_name = request.POST.get('college_name')
+        college_short_name = request.POST.get('college_short_name')
+        
+        if not college_name or not college_short_name:
+            messages.error(request, "All fields are required!")
+            return redirect('college_setting')
+            
+        setting, created = CollegeSetting.objects.get_or_create(admin_creator=request.user)
+        setting.college_name = college_name
+        setting.college_short_name = college_short_name
+        
+        if len(request.FILES) != 0:
+            college_logo = request.FILES['college_logo']
+            fs = FileSystemStorage()
+            filename = fs.save(college_logo.name, college_logo)
+            setting.college_logo = filename
+            
+        try:
+            setting.save()
+            messages.success(request, "College Settings Saved Successfully!")
+            return redirect('college_setting')
+        except Exception as e:
+            messages.error(request, f"Failed to Save Settings: {str(e)}")
+            return redirect('college_setting')
 
 
 

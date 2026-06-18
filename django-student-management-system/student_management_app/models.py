@@ -9,6 +9,7 @@ class SessionYearModel(models.Model):
     id = models.AutoField(primary_key=True)
     session_start_year = models.DateField()
     session_end_year = models.DateField()
+    admin_creator = models.ForeignKey('CustomUser', on_delete=models.CASCADE, null=True, blank=True, related_name='created_sessions')
     objects = models.Manager()
 
 
@@ -23,6 +24,7 @@ class CustomUser(AbstractUser):
 class AdminHOD(models.Model):
     id = models.AutoField(primary_key=True)
     admin = models.OneToOneField(CustomUser, on_delete = models.CASCADE)
+    profile_pic = models.FileField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
@@ -32,6 +34,9 @@ class Staffs(models.Model):
     id = models.AutoField(primary_key=True)
     admin = models.OneToOneField(CustomUser, on_delete = models.CASCADE)
     address = models.TextField()
+    gender = models.CharField(max_length=50, default="")
+    profile_pic = models.FileField(null=True, blank=True)
+    admin_creator = models.ForeignKey('CustomUser', on_delete=models.CASCADE, null=True, blank=True, related_name='created_staffs')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
@@ -42,6 +47,7 @@ class Courses(models.Model):
     id = models.AutoField(primary_key=True)
     course_name = models.CharField(max_length=255)
     course_fee = models.FloatField(default=0)
+    admin_creator = models.ForeignKey('CustomUser', on_delete=models.CASCADE, null=True, blank=True, related_name='created_courses')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
@@ -68,8 +74,9 @@ class Students(models.Model):
     gender = models.CharField(max_length=50)
     profile_pic = models.FileField()
     address = models.TextField()
-    course_id = models.ForeignKey(Courses, on_delete=models.DO_NOTHING, default=1)
-    session_year_id = models.ForeignKey(SessionYearModel, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.SET_NULL, default=1, null=True, blank=True)
+    session_year_id = models.ForeignKey(SessionYearModel, on_delete=models.SET_NULL, null=True, blank=True)
+    admin_creator = models.ForeignKey('CustomUser', on_delete=models.CASCADE, null=True, blank=True, related_name='created_students')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
@@ -215,7 +222,9 @@ def create_user_profile(sender, instance, created, **kwargs):
         if instance.user_type == 2:
             Staffs.objects.create(admin=instance)
         if instance.user_type == 3:
-            Students.objects.create(admin=instance, course_id=Courses.objects.get(id=1), session_year_id=SessionYearModel.objects.get(id=1), address="", profile_pic="", gender="")
+            course_default = Courses.objects.filter(id=1).first()
+            session_default = SessionYearModel.objects.filter(id=1).first()
+            Students.objects.create(admin=instance, course_id=course_default, session_year_id=session_default, address="", profile_pic="", gender="")
     
 
 @receiver(post_save, sender=CustomUser)
@@ -226,6 +235,17 @@ def save_user_profile(sender, instance, **kwargs):
         instance.staffs.save()
     if instance.user_type == 3:
         instance.students.save()
+
+
+class CollegeSetting(models.Model):
+    id = models.AutoField(primary_key=True)
+    admin_creator = models.OneToOneField('CustomUser', on_delete=models.CASCADE, related_name='college_setting')
+    college_name = models.CharField(max_length=255)
+    college_short_name = models.CharField(max_length=50)
+    college_logo = models.FileField(upload_to='college_logos/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    objects = models.Manager()
     
 
 

@@ -3,6 +3,17 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Load local environment variables from .env file if it exists
+try:
+    with open(os.path.join(BASE_DIR, '.env'), 'r') as f:
+        for line in f:
+            if '=' in line and not line.strip().startswith('#'):
+                k, v = line.strip().split('=', 1)
+                os.environ[k.strip()] = v.strip().strip('"').strip("'")
+except Exception:
+    pass
+
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '(i#*06f#keydy_fh17bf=$0f6v)^wr^l7*u4gq42m*sztu#2_m'
@@ -63,6 +74,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'student_management_app.context_processors.college_settings_processor',
             ],
         },
     },
@@ -143,3 +155,14 @@ AUTH_USER_MODEL = "student_management_app.CustomUser"
 AUTHENTICATION_BACKENDS = [
     'student_management_app.EmailBackEnd.EmailBackEnd'
 ]
+
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+
+# --- FREE AI CHATBOT OPTIONS (No Credit Card Details Required) ---
+# If you don't want to add credit card details for Google Gemini, you can use:
+# 1. Groq (Get a free key from: https://console.groq.com/)
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+
+# 2. OpenRouter (Get a free key from: https://openrouter.ai/keys)
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+

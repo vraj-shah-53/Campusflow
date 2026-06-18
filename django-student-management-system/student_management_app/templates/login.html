@@ -2,66 +2,336 @@
 {% load static %}
 
 {% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
 
-<body class="hold-transition login-page">
-  <div class="login-box">
-    <div class="login-logo">
-      <a href="{% url 'login' %}"><b>Campus</b>Flow</a>
+  body.role-auth-body {
+    background: radial-gradient(circle at 10% 20%, #f4f6f9 0%, #edf2f7 90%);
+    font-family: 'Outfit', sans-serif;
+    color: #2d3748;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Animated background blobs */
+  .auth-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: 0;
+    opacity: 0.05;
+    animation: auth-float 10s infinite alternate ease-in-out;
+  }
+
+  /* Theme-based colors */
+  {% if role == 'staff' %}
+  .auth-blob-1 {
+    width: 350px;
+    height: 350px;
+    background: #00f2fe;
+    top: -50px;
+    left: -50px;
+  }
+
+  .auth-blob-2 {
+    width: 450px;
+    height: 450px;
+    background: #4e54c8;
+    bottom: -100px;
+    right: -50px;
+    animation-delay: -5s;
+  }
+
+  .auth-logo-text {
+    background: linear-gradient(135deg, #3182ce 0%, #4e54c8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .submit-btn-custom {
+    background: linear-gradient(135deg, #3182ce 0%, #4e54c8 100%);
+    box-shadow: 0 4px 15px rgba(49, 130, 206, 0.15);
+  }
+
+  .submit-btn-custom:hover {
+    box-shadow: 0 6px 20px rgba(49, 130, 206, 0.25);
+  }
+
+  .back-to-home:hover {
+    color: #3182ce;
+  }
+  {% else %}
+  .auth-blob-1 {
+    width: 350px;
+    height: 350px;
+    background: #b180ff;
+    top: -50px;
+    left: -50px;
+  }
+
+  .auth-blob-2 {
+    width: 450px;
+    height: 450px;
+    background: #89216b;
+    bottom: -100px;
+    right: -50px;
+    animation-delay: -5s;
+  }
+
+  .auth-logo-text {
+    background: linear-gradient(135deg, #b180ff 0%, #89216b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .submit-btn-custom {
+    background: linear-gradient(135deg, #b180ff 0%, #89216b 100%);
+    box-shadow: 0 4px 15px rgba(177, 128, 255, 0.15);
+  }
+
+  .submit-btn-custom:hover {
+    box-shadow: 0 6px 20px rgba(177, 128, 255, 0.25);
+  }
+
+  .back-to-home:hover {
+    color: #b180ff;
+  }
+  {% endif %}
+
+  @keyframes auth-float {
+    0% { transform: translateY(0) scale(1); }
+    100% { transform: translateY(30px) scale(1.05); }
+  }
+
+  .auth-card {
+    background: #ffffff;
+    border: 1px rgba(0, 0, 0, 0.05) solid;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 450px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+    z-index: 1;
+    text-align: center;
+  }
+
+  .auth-logo {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+    letter-spacing: -0.5px;
+  }
+
+  .auth-subtitle {
+    font-size: 0.95rem;
+    color: #4a5568;
+    margin-bottom: 35px;
+    font-weight: 400;
+  }
+
+  .form-group-custom {
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .form-group-custom label {
+    font-size: 0.85rem;
+    color: #4a5568;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+    text-align: left;
+  }
+
+  .input-icon-wrapper {
+    position: relative;
+  }
+
+  .input-icon-wrapper i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #718096;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+  }
+
+  .input-custom {
+    background: #f7fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #2d3748 !important;
+    border-radius: 12px !important;
+    padding: 12px 15px 12px 45px !important;
+    width: 100%;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    height: auto !important;
+  }
+
+  .input-custom:focus {
+    background: #ffffff !important;
+    {% if role == 'staff' %}
+    border-color: rgba(49, 130, 206, 0.6) !important;
+    box-shadow: 0 0 10px rgba(49, 130, 206, 0.2) !important;
+    {% else %}
+    border-color: rgba(177, 128, 255, 0.6) !important;
+    box-shadow: 0 0 10px rgba(177, 128, 255, 0.2) !important;
+    {% endif %}
+    outline: none;
+  }
+
+  .input-custom:focus + i {
+    {% if role == 'staff' %}
+    color: #3182ce;
+    {% else %}
+    color: #b180ff;
+    {% endif %}
+  }
+
+  .submit-btn-custom {
+    border: none;
+    border-radius: 12px;
+    color: white;
+    padding: 14px;
+    width: 100%;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+  }
+
+  .submit-btn-custom:hover {
+    transform: translateY(-2px);
+    opacity: 0.95;
+  }
+
+  .back-to-home {
+    display: inline-block;
+    margin-top: 25px;
+    font-size: 0.85rem;
+    color: #718096;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  /* Alerts Styling */
+  .alert-custom {
+    background: rgba(255, 94, 98, 0.15);
+    border: 1px solid rgba(255, 94, 98, 0.3);
+    color: #ff8a8c;
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .password-input {
+    padding-right: 45px !important;
+  }
+
+  .password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #718096;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+    z-index: 10;
+  }
+
+  .password-toggle:hover {
+    {% if role == 'staff' %}
+    color: #00f2fe !important;
+    {% else %}
+    color: #da4453 !important;
+    {% endif %}
+  }
+</style>
+
+<body class="role-auth-body">
+  <div class="auth-blob auth-blob-1"></div>
+  <div class="auth-blob auth-blob-2"></div>
+
+  <div class="auth-card">
+    <div class="auth-logo auth-logo-text">CampusFlow</div>
+    <div class="auth-subtitle">
+      {% if role == 'staff' %}
+        Faculty Member Sign In
+      {% else %}
+        Student Sign In
+      {% endif %}
     </div>
-    <!-- /.login-logo -->
-    <div class="card">
-      <div class="card-body login-card-body">
-        <p class="login-box-msg">Sign in to CampusFlow</p>
 
-        <form action="{% url 'doLogin' %}" method="POST">
-          {% csrf_token %}
-          <div class="input-group mb-3">
-            <input type="email" class="form-control" placeholder="Email" name="email">
-            <div class="input-group-append">
-              <div class="input-group-text">
-                <span class="fas fa-envelope"></span>
-              </div>
-            </div>
+    <!-- Messages / Errors -->
+    {% if messages %}
+      {% for message in messages %}
+        {% if message.tags == "error" %}
+          <div class="alert-custom">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ message }}</span>
           </div>
-          <div class="input-group mb-3">
-            <input type="password" class="form-control" placeholder="Password" name="password">
-            <div class="input-group-append">
-              <div class="input-group-text">
-                <span class="fas fa-lock"></span>
-              </div>
-            </div>
-          </div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
 
-          <div class="col-12">
-            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
-          </div>
-
-          {% comment %} <div class="col-12 text-center">
-            <a href="{% url 'password_reset' %}">Reset Password</a>
-          </div> {% endcomment %}
-
-          {% comment %} Display Messages {% endcomment %}
-          {% if messages %}
-          <div class="col-12">
-            {% for message in messages %}
-            {% if message.tags == "error" %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-top: 10px;">
-              {{ message }}
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            {% endif %}
-            {% endfor %}
-          </div>
-          {% endif %}
-
-          <!-- /.col -->
+    <!-- Login Form -->
+    <form action="{% url 'doLogin' %}" method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="role" value="{{ role }}">
+      
+      <div class="form-group-custom">
+        <label>Email Address</label>
+        <div class="input-icon-wrapper">
+          <input type="email" class="form-control input-custom" placeholder="user@example.com" name="email" required>
+          <i class="fas fa-envelope"></i>
+        </div>
       </div>
-      </form>
 
-    </div>
+      <div class="form-group-custom">
+        <label>Password</label>
+        <div class="input-icon-wrapper">
+          <input type="password" class="form-control input-custom password-input" placeholder="••••••••" name="password" required>
+          <i class="fas fa-lock"></i>
+          <i class="fas fa-eye password-toggle" onclick="togglePassword(this)"></i>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn-custom">Sign In</button>
+    </form>
+
+    <a href="{% url 'entrance' %}" class="back-to-home">
+      <i class="fas fa-arrow-left"></i> Back to roles select
+    </a>
   </div>
-  <!-- /.login-box -->
 
-  {% endblock %}
+  <script>
+    function togglePassword(el) {
+      const wrapper = el.closest('.input-icon-wrapper');
+      const input = wrapper.querySelector('input');
+      if (input.type === 'password') {
+        input.type = 'text';
+        el.classList.remove('fa-eye');
+        el.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        el.classList.remove('fa-eye-slash');
+        el.classList.add('fa-eye');
+      }
+    }
+  </script>
+</body>
+{% endblock %}

@@ -86,7 +86,17 @@
                                 <td>{{ student.admin.email }}</td>
                                 <td>{{ student.address }}</td>
                                 <td>{{ student.gender }}</td>
-                                <td> <img src="{{ student.profile_pic }}" style="width: 100px;" /> </td>
+                                <td>
+                                  {% if student.profile_pic and student.profile_pic.name %}
+                                    <img src="{{ student.profile_pic.url }}" style="width: 40px; height: 40px; object-fit: cover;" class="img-circle" />
+                                  {% else %}
+                                    {% if student.gender|lower == 'female' %}
+                                      <span class="img-circle d-inline-flex align-items-center justify-content-center bg-light" style="width: 40px; height: 40px; font-size: 20px;">👩‍🎓</span>
+                                    {% else %}
+                                      <span class="img-circle d-inline-flex align-items-center justify-content-center bg-light" style="width: 40px; height: 40px; font-size: 20px;">👨‍🎓</span>
+                                    {% endif %}
+                                  {% endif %}
+                                </td>
                                 <td>{{ student.session_year_id.session_start_year }}</td>
                                 <td>{{ student.session_year_id.session_end_year }}</td>
                                 <td>{{ student.course_id.course_name }}</td>

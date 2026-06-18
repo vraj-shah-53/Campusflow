@@ -40,7 +40,35 @@ class LoginCheckMiddleWare(MiddlewareMixin):
                 return redirect("login")
 
         else:
-            if request.path == reverse("login") or request.path == reverse("doLogin"):
+            allowed_paths = []
+            try:
+                allowed_paths.append(reverse("entrance"))
+            except:
+                pass
+            try:
+                allowed_paths.append(reverse("login"))
+            except:
+                pass
+            try:
+                allowed_paths.append(reverse("doLogin"))
+            except:
+                pass
+            try:
+                allowed_paths.append(reverse("admin_register"))
+            except:
+                pass
+            try:
+                allowed_paths.append(reverse("do_admin_register"))
+            except:
+                pass
+            
+            for r in ['admin', 'faculty', 'staff', 'student']:
+                try:
+                    allowed_paths.append(reverse("login_with_role", kwargs={"role": r}))
+                except:
+                    pass
+
+            if request.path in allowed_paths:
                 pass
             else:
-                return redirect("login")
+                return redirect("entrance")

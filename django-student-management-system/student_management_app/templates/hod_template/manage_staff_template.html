@@ -67,6 +67,8 @@
                                 <th>Username</th>
                                 <th>Email</th>
                                 <th>Address</th>
+                                <th>Gender</th>
+                                <th>Profile Pic</th>
                                 <th>Last Login</th>
                                 <th>Date Joined</th>
                                 <th>Action</th>
@@ -81,6 +83,18 @@
                                 <td>{{ staff.admin.username }}</td>
                                 <td>{{ staff.admin.email }}</td>
                                 <td>{{ staff.address }}</td>
+                                <td>{{ staff.gender }}</td>
+                                <td>
+                                  {% if staff.profile_pic and staff.profile_pic.name %}
+                                    <img src="{{ staff.profile_pic.url }}" style="width: 40px; height: 40px; object-fit: cover;" class="img-circle" />
+                                  {% else %}
+                                    {% if staff.gender|lower == 'female' %}
+                                      <span class="img-circle d-inline-flex align-items-center justify-content-center bg-light" style="width: 40px; height: 40px; font-size: 20px;">👩‍🏫</span>
+                                    {% else %}
+                                      <span class="img-circle d-inline-flex align-items-center justify-content-center bg-light" style="width: 40px; height: 40px; font-size: 20px;">👨‍🏫</span>
+                                    {% endif %}
+                                  {% endif %}
+                                </td>
                                 <td>{{ staff.admin.last_login }}</td>
                                 <td>{{ staff.admin.date_joined }}</td>
                                 <td>
