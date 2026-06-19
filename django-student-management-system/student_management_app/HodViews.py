@@ -929,6 +929,11 @@ def college_setting_save(request):
             return redirect('college_setting')
             
         setting, created = CollegeSetting.objects.get_or_create(admin_creator=request.user)
+        
+        if len(request.FILES) == 0 and not setting.college_logo:
+            messages.error(request, "Please upload a college logo!")
+            return redirect('college_setting')
+            
         setting.college_name = college_name
         setting.college_short_name = college_short_name
         
