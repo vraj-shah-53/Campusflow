@@ -217,11 +217,11 @@ def create_user_profile(sender, instance, created, **kwargs):
     # if Created is true (Means Data Inserted)
     if created:
         # Check the user_type and insert the data in respective tables
-        if instance.user_type == 1:
+        if str(instance.user_type) == "1":
             AdminHOD.objects.create(admin=instance)
-        if instance.user_type == 2:
+        if str(instance.user_type) == "2":
             Staffs.objects.create(admin=instance)
-        if instance.user_type == 3:
+        if str(instance.user_type) == "3":
             course_default = Courses.objects.filter(id=1).first()
             session_default = SessionYearModel.objects.filter(id=1).first()
             Students.objects.create(admin=instance, course_id=course_default, session_year_id=session_default, address="", profile_pic="", gender="")
@@ -229,11 +229,11 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=CustomUser)
 def save_user_profile(sender, instance, **kwargs):
-    if instance.user_type == 1:
+    if str(instance.user_type) == "1":
         instance.adminhod.save()
-    if instance.user_type == 2:
+    if str(instance.user_type) == "2":
         instance.staffs.save()
-    if instance.user_type == 3:
+    if str(instance.user_type) == "3":
         instance.students.save()
 
 
