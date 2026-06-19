@@ -6,6 +6,9 @@
     {% if college_setting and college_setting.college_logo %}
       <img src="{{ college_setting.college_logo.url }}" alt="College Logo" class="brand-image img-circle elevation-3"
         style="opacity: .8; width: 33px; height: 33px; object-fit: cover;">
+    {% else %}
+      <img src="{% static 'dist/img/campusflow_logo.jpg' %}" alt="CampusFlow Logo" class="brand-image img-circle elevation-3"
+        style="opacity: .9; width: 33px; height: 33px; object-fit: cover; background: white;">
     {% endif %}
     <span class="brand-text font-weight-light">
       {% if college_setting and college_setting.college_short_name %}
