@@ -1,7 +1,7 @@
 {% extends 'hod_template/base_template.html' %}
 
 {% block page_title %}
-    Leave Apply by Staffs
+    Staff Leave Applications
 {% endblock page_title %}
 
 {% block main_content %}
@@ -16,7 +16,7 @@
                     <!-- general form elements -->
                     <div class="card card-primary">
                         <div class="card-header">
-                            <h3 class="card-title">Leave Apply by Staffs</h3>
+                            <h3 class="card-title">Staff Leave Applications</h3>
                         </div>
                         <!-- /.card-header -->
 
@@ -39,7 +39,7 @@
                                 <tr>
                                     <td>{{ leave.id }}</td>
                                     <td>{{ leave.staff_id.admin.id }}</td>
-                                    <td>{{ leave.staff_id.admin.first_name }} {{ feedback.staff_id.admin.last_name }}</td> 
+                                    <td>{{ leave.staff_id.admin.first_name }} {{ leave.staff_id.admin.last_name }}</td> 
                                     <td>{{ leave.leave_date }}</td>
                                     <td>{{ leave.leave_message }}</td>
                                     <td>{{ leave.created_at }}</td>
