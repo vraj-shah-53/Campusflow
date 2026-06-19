@@ -96,6 +96,10 @@ def staff_apply_leave_save(request):
         leave_date = request.POST.get('leave_date')
         leave_message = request.POST.get('leave_message')
 
+        if not leave_date:
+            messages.error(request, "Please select a leave date.")
+            return redirect('staff_apply_leave')
+
         staff_obj = Staffs.objects.get(admin=request.user.id)
         try:
             leave_report = LeaveReportStaff(staff_id=staff_obj, leave_date=leave_date, leave_message=leave_message, leave_status=0)

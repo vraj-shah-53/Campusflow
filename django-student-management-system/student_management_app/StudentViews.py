@@ -82,9 +82,23 @@ def student_view_attendance_post(request):
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
 
+        # Validate that both dates are selected
+        if not start_date or not end_date:
+            messages.error(request, "Please select both Start Date and End Date.")
+            return redirect('student_view_attendance')
+
         # Parsing the date data into Python object
-        start_date_parse = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
-        end_date_parse = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
+        try:
+            start_date_parse = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date_parse = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            messages.error(request, "Invalid date format. Please choose valid dates.")
+            return redirect('student_view_attendance')
+
+        # Validate that start date is not after end date
+        if start_date_parse > end_date_parse:
+            messages.error(request, "Start Date cannot be after End Date. Please choose another date.")
+            return redirect('student_view_attendance')
 
         # Getting all the Subject Data based on Selected Subject
         subject_obj = Subjects.objects.get(id=subject_id)
@@ -127,6 +141,10 @@ def student_apply_leave_save(request):
     else:
         leave_date = request.POST.get('leave_date')
         leave_message = request.POST.get('leave_message')
+
+        if not leave_date:
+            messages.error(request, "Please select a leave date.")
+            return redirect('student_apply_leave')
 
         student_obj = Students.objects.get(admin=request.user.id)
         try:

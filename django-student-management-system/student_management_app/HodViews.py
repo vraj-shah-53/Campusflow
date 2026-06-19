@@ -294,6 +294,14 @@ def add_session_save(request):
         session_start_year = request.POST.get('session_start_year')
         session_end_year = request.POST.get('session_end_year')
 
+        if not session_start_year or not session_end_year:
+            messages.error(request, "Please select both Session Start Date and Session End Date.")
+            return redirect("add_session")
+
+        if session_start_year > session_end_year:
+            messages.error(request, "Session Start Date cannot be after Session End Date. Please choose another date.")
+            return redirect("add_session")
+
         try:
             sessionyear = SessionYearModel(session_start_year=session_start_year, session_end_year=session_end_year, admin_creator=request.user)
             sessionyear.save()
@@ -320,6 +328,14 @@ def edit_session_save(request):
         session_id = request.POST.get('session_id')
         session_start_year = request.POST.get('session_start_year')
         session_end_year = request.POST.get('session_end_year')
+
+        if not session_start_year or not session_end_year:
+            messages.error(request, "Please select both Session Start Date and Session End Date.")
+            return redirect('/edit_session/'+session_id)
+
+        if session_start_year > session_end_year:
+            messages.error(request, "Session Start Date cannot be after Session End Date. Please choose another date.")
+            return redirect('/edit_session/'+session_id)
 
         try:
             session_year = SessionYearModel.objects.get(id=session_id)
