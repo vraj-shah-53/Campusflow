@@ -97,10 +97,20 @@ WSGI_APPLICATION = 'student_management_system.wsgi.application'
 
 # Database
 
+PERSISTENT_DIR = os.environ.get('PERSISTENT_DIR')
+if PERSISTENT_DIR:
+    try:
+        os.makedirs(PERSISTENT_DIR, exist_ok=True)
+    except Exception:
+        pass
+    DB_PATH = os.path.join(PERSISTENT_DIR, 'db.sqlite3')
+else:
+    DB_PATH = os.path.join(BASE_DIR, 'db.sqlite3')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': DB_PATH,
     }
 }
 
@@ -154,7 +164,10 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+if PERSISTENT_DIR:
+    MEDIA_ROOT = os.path.join(PERSISTENT_DIR, 'media')
+else:
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # Custom USER
