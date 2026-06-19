@@ -163,6 +163,30 @@ Staff Home
 
 {% block custom_js %}
 <script>
+    // Helper function to wrap long labels to prevent layout squeezing
+    function wrapLabel(label, maxLength) {
+        if (!label) return "";
+        if (label.length <= maxLength) return label;
+        var words = label.split(' ');
+        var lines = [];
+        var currentLine = "";
+        for (var i = 0; i < words.length; i++) {
+            var word = words[i];
+            if ((currentLine + " " + word).trim().length <= maxLength) {
+                currentLine = (currentLine + " " + word).trim();
+            } else {
+                if (currentLine !== "") {
+                    lines.push(currentLine);
+                }
+                currentLine = word;
+            }
+        }
+        if (currentLine !== "") {
+            lines.push(currentLine);
+        }
+        return lines;
+    }
+
     // Helper function to generate N background colors
     function generateColors(numColors) {
         var colors = [];
@@ -211,7 +235,10 @@ Staff Home
         //- BAR CHART (Subject Attend Chart) -
         //-------------
         var attendance_list = {{ attendance_list| safe }}
-        var subject_list = {{ subject_list| safe }}
+        var raw_subject_list = {{ subject_list| safe }};
+        var subject_list = raw_subject_list.map(function(label) {
+            return wrapLabel(label, 12);
+        });
 
         var barChartCanvas = $('#barChart').get(0).getContext('2d')
         var barChartData = {
@@ -236,7 +263,10 @@ Staff Home
                     },
                     ticks: {
                         fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        fontColor: '#64748b'
+                        fontColor: '#64748b',
+                        autoSkip: false,
+                        maxRotation: 0,
+                        minRotation: 0
                     }
                 }],
                 yAxes: [{
@@ -264,7 +294,10 @@ Staff Home
         //-------------
         //- BAR CHART 2 (Student Attendance Present vs Absent) -
         //-------------
-        var student_list = {{ student_list| safe }};
+        var raw_student_list = {{ student_list| safe }};
+        var student_list = raw_student_list.map(function(label) {
+            return wrapLabel(label, 12);
+        });
         var attendance_present_list = {{ attendance_present_list| safe }}
         var attendance_absent_list = {{ attendance_absent_list| safe }}
 
@@ -298,7 +331,10 @@ Staff Home
                     },
                     ticks: {
                         fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        fontColor: '#64748b'
+                        fontColor: '#64748b',
+                        autoSkip: false,
+                        maxRotation: 0,
+                        minRotation: 0
                     }
                 }],
                 yAxes: [{

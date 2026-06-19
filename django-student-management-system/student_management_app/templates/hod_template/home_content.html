@@ -235,6 +235,30 @@
 
 <script>
   $(document).ready(function () {
+    // Helper function to wrap long labels to prevent layout squeezing
+    function wrapLabel(label, maxLength) {
+        if (!label) return "";
+        if (label.length <= maxLength) return label;
+        var words = label.split(' ');
+        var lines = [];
+        var currentLine = "";
+        for (var i = 0; i < words.length; i++) {
+            var word = words[i];
+            if ((currentLine + " " + word).trim().length <= maxLength) {
+                currentLine = (currentLine + " " + word).trim();
+            } else {
+                if (currentLine !== "") {
+                    lines.push(currentLine);
+                }
+                currentLine = word;
+            }
+        }
+        if (currentLine !== "") {
+            lines.push(currentLine);
+        }
+        return lines;
+    }
+
     // Helper function to generate N background colors
     function generateColors(numColors) {
       var colors = [];
@@ -385,7 +409,10 @@
     //-------------
     var staff_attendance_present_list = {{ staff_attendance_present_list| safe }};
     var staff_attendance_leave_list = {{ staff_attendance_leave_list| safe }};
-    var staff_name_list = {{ staff_name_list| safe }};
+    var raw_staff_name_list = {{ staff_name_list| safe }};
+    var staff_name_list = raw_staff_name_list.map(function(label) {
+        return wrapLabel(label, 12);
+    });
 
     var barChartCanvas = $('#barChart').get(0).getContext('2d')
     var barChartData = {
@@ -418,7 +445,10 @@
           },
           ticks: {
             fontFamily: "'Plus Jakarta Sans', sans-serif",
-            fontColor: '#64748b'
+            fontColor: '#64748b',
+            autoSkip: false,
+            maxRotation: 0,
+            minRotation: 0
           }
         }],
         yAxes: [{
@@ -453,7 +483,10 @@
     //-------------
     var student_attendance_present_list = {{ student_attendance_present_list| safe }};
     var student_attendance_leave_list = {{ student_attendance_leave_list| safe }};
-    var student_name_list = {{ student_name_list| safe }};
+    var raw_student_name_list = {{ student_name_list| safe }};
+    var student_name_list = raw_student_name_list.map(function(label) {
+        return wrapLabel(label, 12);
+    });
 
     var barChartCanvas2 = $('#barChart2').get(0).getContext('2d')
     var barChartData2 = {

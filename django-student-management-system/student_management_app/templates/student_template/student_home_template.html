@@ -205,6 +205,30 @@ Student Home
 {% block custom_js %}
 <script>
     $(document).ready(function () {
+        // Helper function to wrap long labels to prevent layout squeezing
+        function wrapLabel(label, maxLength) {
+            if (!label) return "";
+            if (label.length <= maxLength) return label;
+            var words = label.split(' ');
+            var lines = [];
+            var currentLine = "";
+            for (var i = 0; i < words.length; i++) {
+                var word = words[i];
+                if ((currentLine + " " + word).trim().length <= maxLength) {
+                    currentLine = (currentLine + " " + word).trim();
+                } else {
+                    if (currentLine !== "") {
+                        lines.push(currentLine);
+                    }
+                    currentLine = word;
+                }
+            }
+            if (currentLine !== "") {
+                lines.push(currentLine);
+            }
+            return lines;
+        }
+
         // Helper function to generate N background colors
         function generateColors(numColors) {
             var colors = [];
@@ -251,7 +275,10 @@ Student Home
         //-------------
         //- BAR CHART (Attendance Statistics by Subjects) -
         //-------------
-        var subjects = {{ subject_name| safe }}
+        var raw_subjects = {{ subject_name| safe }};
+        var subjects = raw_subjects.map(function(label) {
+            return wrapLabel(label, 12);
+        });
         var data_present = {{ data_present| safe }}
         var data_absent = {{ data_absent| safe }}
 
@@ -285,7 +312,10 @@ Student Home
                     },
                     ticks: {
                         fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        fontColor: '#64748b'
+                        fontColor: '#64748b',
+                        autoSkip: false,
+                        maxRotation: 0,
+                        minRotation: 0
                     }
                 }],
                 yAxes: [{
