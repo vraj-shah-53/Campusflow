@@ -129,12 +129,13 @@ Staff Home
             </div>
         </div>
 
+        {% for chart in subject_charts_data %}
         <div class="row">
             <div class="col-lg-12">
                 <!-- BAR CHART -->
-                <div class="card card-info">
+                <div class="card card-info shadow-sm" style="border-radius: 10px;">
                     <div class="card-header">
-                        <h3 class="card-title">Student Attendance Data</h3>
+                        <h3 class="card-title"><i class="fas fa-chart-bar mr-2"></i>Student Attendance: {{ chart.subject_name }}</h3>
 
                         <div class="card-tools">
                             <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
@@ -146,8 +147,8 @@ Staff Home
                     </div>
                     <div class="card-body">
                         <div class="chart">
-                            <canvas id="barChart2"
-                                style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            <canvas id="studentBarChart_{{ chart.subject_id }}"
+                                style="min-height: 280px; height: 280px; max-height: 280px; max-width: 100%;"></canvas>
                         </div>
                     </div>
                     <!-- /.card-body -->
@@ -155,6 +156,7 @@ Staff Home
                 <!-- /.card -->
             </div>
         </div>
+        {% endfor %}
 
     </div><!-- /.container-fluid -->
 </section>
@@ -289,79 +291,83 @@ Staff Home
             type: 'bar',
             data: barChartData,
             options: barChartOptions
-        })
-
-        //-------------
-        //- BAR CHART 2 (Student Attendance Present vs Absent) -
-        //-------------
-        var raw_student_list = {{ student_list| safe }};
-        var student_list = raw_student_list.map(function(label) {
-            return wrapLabel(label, 12);
         });
-        var attendance_present_list = {{ attendance_present_list| safe }}
-        var attendance_absent_list = {{ attendance_absent_list| safe }}
 
-        var barChartCanvas2 = $('#barChart2').get(0).getContext('2d')
-        var barChartData2 = {
-            labels: student_list,
-            datasets: [
-                {
-                    label: 'Present',
-                    backgroundColor: 'rgba(16, 185, 129, 0.85)', // Emerald
-                    borderColor: '#10b981',
-                    borderWidth: 1,
-                    data: attendance_present_list
+        //-------------
+        //- BAR CHARTS FOR SUBJECT-WISE STUDENT ATTENDANCE -
+        //-------------
+        {% for chart in subject_charts_data %}
+        ;(function() {
+            var raw_student_list = {{ chart.student_list| safe }};
+            var student_list = raw_student_list.map(function(label) {
+                return wrapLabel(label, 12);
+            });
+            var attendance_present_list = {{ chart.attendance_present_list| safe }}
+            var attendance_absent_list = {{ chart.attendance_absent_list| safe }}
+
+            var barChartCanvas = $('#studentBarChart_{{ chart.subject_id }}').get(0).getContext('2d')
+            var barChartData = {
+                labels: student_list,
+                datasets: [
+                    {
+                        label: 'Present',
+                        backgroundColor: 'rgba(16, 185, 129, 0.85)', // Emerald
+                        borderColor: '#10b981',
+                        borderWidth: 1,
+                        data: attendance_present_list
+                    },
+                    {
+                        label: 'Absent',
+                        backgroundColor: 'rgba(244, 63, 94, 0.85)', // Rose
+                        borderColor: '#f43f5e',
+                        borderWidth: 1,
+                        data: attendance_absent_list
+                    }
+                ]
+            }
+            var barChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    xAxes: [{
+                        gridLines: {
+                            display: false
+                        },
+                        ticks: {
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            fontColor: '#64748b',
+                            autoSkip: false,
+                            maxRotation: 0,
+                            minRotation: 0
+                        }
+                    }],
+                    yAxes: [{
+                        gridLines: {
+                            color: '#f1f5f9',
+                            zeroLineColor: '#f1f5f9'
+                        },
+                        ticks: {
+                            beginAtZero: true,
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            fontColor: '#64748b'
+                        }
+                    }]
                 },
-                {
-                    label: 'Absent',
-                    backgroundColor: 'rgba(244, 63, 94, 0.85)', // Rose
-                    borderColor: '#f43f5e',
-                    borderWidth: 1,
-                    data: attendance_absent_list
-                }
-            ]
-        }
-        var barChartOptions2 = {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                xAxes: [{
-                    gridLines: {
-                        display: false
-                    },
-                    ticks: {
+                legend: {
+                    labels: {
                         fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        fontColor: '#64748b',
-                        autoSkip: false,
-                        maxRotation: 0,
-                        minRotation: 0
+                        fontColor: '#475569',
+                        boxWidth: 12
                     }
-                }],
-                yAxes: [{
-                    gridLines: {
-                        color: '#f1f5f9',
-                        zeroLineColor: '#f1f5f9'
-                    },
-                    ticks: {
-                        beginAtZero: true,
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        fontColor: '#64748b'
-                    }
-                }]
-            },
-            legend: {
-                labels: {
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    fontColor: '#475569',
-                    boxWidth: 12
                 }
             }
-        }
-        var barChart2 = new Chart(barChartCanvas2, {
-            type: 'bar',
-            data: barChartData2,
-            options: barChartOptions2
-        })
+            new Chart(barChartCanvas, {
+                type: 'bar',
+                data: barChartData,
+                options: barChartOptions
+            })
+        })();
+        {% endfor %}
     })
 </script>
 {% endblock custom_js %}

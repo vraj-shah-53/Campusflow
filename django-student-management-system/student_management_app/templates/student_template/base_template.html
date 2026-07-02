@@ -153,6 +153,66 @@
   <!-- AdminLTE for demo purposes -->
   <script src="{% static 'dist/js/demo.js'  %}"></script>
 
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <script>
+    $(document).ready(function() {
+        function checkNotifications() {
+            $.ajax({
+                url: "{% url 'student_get_notifications' %}",
+                type: "GET",
+                success: function(response) {
+                    var data = response;
+                    if (typeof response === "string") {
+                        try {
+                            data = JSON.parse(response);
+                        } catch(e) {}
+                    }
+                    if (data && data.length > 0) {
+                        var seenNotifications = JSON.parse(localStorage.getItem('seen_notifications') || '[]');
+                        var newSeen = [...seenNotifications];
+                        var hasNew = false;
+                        
+                        data.forEach(function(notif) {
+                            if (seenNotifications.indexOf(notif.id) === -1) {
+                                hasNew = true;
+                                Swal.fire({
+                                    title: 'New Assignment Uploaded!',
+                                    text: notif.message,
+                                    icon: 'info',
+                                    toast: true,
+                                    position: 'top-end',
+                                    showConfirmButton: true,
+                                    confirmButtonText: 'View',
+                                    showCancelButton: true,
+                                    cancelButtonText: 'Close',
+                                    timer: 10000,
+                                    timerProgressBar: true
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        window.location.href = "{% url 'student_view_assignments' %}";
+                                    }
+                                });
+                                newSeen.push(notif.id);
+                            }
+                        });
+                        if (hasNew) {
+                            localStorage.setItem('seen_notifications', JSON.stringify(newSeen));
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Check notifications on page load
+        checkNotifications();
+        
+        // Poll every 30 seconds for real-time notifications
+        setInterval(checkNotifications, 30000);
+    });
+  </script>
+
   {% comment %} For Custom JS {% endcomment %}
   {% block custom_js %}
   {% endblock custom_js %}

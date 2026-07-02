@@ -246,6 +246,18 @@ class CollegeSetting(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
+
+
+class StudentAssignment(models.Model):
+    id = models.AutoField(primary_key=True)
+    subject_id = models.ForeignKey(Subjects, on_delete=models.CASCADE)
+    session_year_id = models.ForeignKey(SessionYearModel, on_delete=models.CASCADE)
+    assignment_title = models.CharField(max_length=255)
+    assignment_description = models.TextField(blank=True, null=True)
+    assignment_file = models.FileField(upload_to='assignments/')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    objects = models.Manager()
     
 
 

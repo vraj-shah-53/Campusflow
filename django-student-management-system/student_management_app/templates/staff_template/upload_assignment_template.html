@@ -1,0 +1,126 @@
+{% extends 'staff_template/base_template.html' %}
+
+{% block page_title %}
+Upload Assignment
+{% endblock page_title %}
+
+{% block main_content %}
+{% load static %}
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements -->
+                <div class="card card-primary shadow-sm" style="border-radius: 10px;">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-upload mr-2"></i> Upload Subject Assignment</h3>
+                    </div>
+                    <!-- /.card-header -->
+
+                    {% comment %} Display Messages {% endcomment %}
+                    {% if messages %}
+                    <div class="form-group pt-3 px-3 mb-0">
+                        <div class="col-12">
+                            {% for message in messages %}
+                            {% if message.tags == "error" %}
+                            <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert" style="border-radius: 8px;">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>{{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            {% elif message.tags == "success" %}
+                            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert" style="border-radius: 8px;">
+                                <i class="fas fa-check mr-2"></i>{{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <form action="{% url 'staff_upload_assignment' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <div class="form-group mb-4">
+                                <label for="subject" class="text-muted">Select Subject</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-white border-right-0"><i class="fas fa-book text-primary"></i></span>
+                                    </div>
+                                    <select class="form-control border-left-0 pl-0 custom-select" name="subject" id="subject" required>
+                                        {% for subject in subjects %}
+                                        <option value="{{ subject.id }}">{{ subject.subject_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-4">
+                                <label for="session_year" class="text-muted">Select Session Year</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-white border-right-0"><i class="fas fa-calendar-alt text-primary"></i></span>
+                                    </div>
+                                    <select class="form-control border-left-0 pl-0 custom-select" name="session_year" id="session_year" required>
+                                        {% for session_year in session_years %}
+                                        <option value="{{ session_year.id }}">{{ session_year.session_start_year }} to {{ session_year.session_end_year }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-4">
+                                <label for="assignment_title" class="text-muted">Assignment Title</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-white border-right-0"><i class="fas fa-heading text-primary"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control border-left-0 pl-0" name="assignment_title" id="assignment_title" placeholder="e.g. Microprocessors Lab 1" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-4">
+                                <label for="assignment_description" class="text-muted">Description / Notes</label>
+                                <textarea class="form-control" name="assignment_description" id="assignment_description" rows="4" placeholder="Write a short description or notes for the students..." style="border-radius: 8px;"></textarea>
+                            </div>
+
+                            <div class="form-group mb-4">
+                                <label for="assignment_file" class="text-muted">Choose Assignment File</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" name="assignment_file" id="assignment_file" required>
+                                    <label class="custom-file-label" for="assignment_file">Choose file...</label>
+                                </div>
+                                <small class="text-muted">Upload PDF, Word Document, Images, or zip files.</small>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+
+                        <div class="card-footer bg-transparent border-0 pb-4 px-4 pt-0">
+                            <button type="submit" class="btn btn-primary btn-block btn-lg shadow-sm" style="border-radius: 8px; font-weight: 500;">
+                                <i class="fas fa-cloud-upload-alt mr-2"></i> Upload & Notify Students
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+{% endblock main_content %}
+
+{% block custom_js %}
+<script>
+    // Update filename label on file selection
+    document.querySelector('.custom-file-input').addEventListener('change', function (e) {
+        var name = document.getElementById("assignment_file").files[0].name;
+        var nextSibling = e.target.nextElementSibling;
+        nextSibling.innerText = name;
+    });
+</script>
+{% endblock custom_js %}

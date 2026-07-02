@@ -81,6 +81,28 @@
         </li>
 
         <li class="nav-item">
+          {% url 'staff_export_attendance' as staff_export_attendance %}
+          <a href="{{ staff_export_attendance }}"
+            class="nav-link {% if request.path == staff_export_attendance %} active {% endif %}">
+            <i class="nav-icon fas fa-file-excel"></i>
+            <p>
+              Export Attendance
+            </p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          {% url 'staff_upload_assignment' as staff_upload_assignment %}
+          <a href="{{ staff_upload_assignment }}"
+            class="nav-link {% if request.path == staff_upload_assignment %} active {% endif %}">
+            <i class="nav-icon fas fa-upload"></i>
+            <p>
+              Upload Assignment
+            </p>
+          </a>
+        </li>
+
+        <li class="nav-item">
           {% url 'staff_add_result' as staff_add_result %}
           <a href="{{ staff_add_result }}"
             class="nav-link {% if request.path == staff_add_result %} active {% endif %}">

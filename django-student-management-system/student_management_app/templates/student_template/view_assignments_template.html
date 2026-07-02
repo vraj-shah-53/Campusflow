@@ -1,0 +1,76 @@
+{% extends 'student_template/base_template.html' %}
+
+{% block page_title %}
+Course Assignments
+{% endblock page_title %}
+
+{% block main_content %}
+{% load static %}
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Assignments Table -->
+                <div class="card card-primary shadow-sm" style="border-radius: 10px;">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-file-download mr-2"></i> Download Assignments</h3>
+                    </div>
+                    <!-- /.card-header -->
+
+                    <div class="card-body table-responsive p-0">
+                        <table class="table table-hover text-nowrap align-middle">
+                            <thead>
+                                <tr class="bg-light">
+                                    <th>Subject</th>
+                                    <th>Assignment Title</th>
+                                    <th>Description / Instructions</th>
+                                    <th>Upload Date</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if assignments %}
+                                    {% for assignment in assignments %}
+                                    <tr>
+                                        <td class="align-middle">
+                                            <span class="badge badge-info py-2 px-3" style="font-size: 0.85rem; font-weight: 500; border-radius: 6px;">
+                                                {{ assignment.subject_id.subject_name }}
+                                            </span>
+                                        </td>
+                                        <td class="align-middle font-weight-bold">{{ assignment.assignment_title }}</td>
+                                        <td class="align-middle text-wrap" style="max-width: 350px;">
+                                            {% if assignment.assignment_description %}
+                                                {{ assignment.assignment_description }}
+                                            {% else %}
+                                                <span class="text-muted italic">No description provided.</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="align-middle">{{ assignment.created_at|date:"d-m-Y" }}</td>
+                                        <td class="align-middle text-center">
+                                            <a href="{{ assignment.assignment_file.url }}" class="btn btn-success shadow-sm btn-sm px-3" style="border-radius: 6px;" download>
+                                                <i class="fas fa-download mr-2"></i> Download File
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-muted">
+                                            <div class="mb-3" style="font-size: 2.5rem;">📁</div>
+                                            <p class="mb-0 font-weight-bold">No assignments uploaded yet for your course.</p>
+                                            <small>Your faculty members will post assignments here when ready.</small>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+{% endblock main_content %}

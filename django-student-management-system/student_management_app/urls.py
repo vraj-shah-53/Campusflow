@@ -89,6 +89,8 @@ urlpatterns = [
     path('staff_profile_update/', StaffViews.staff_profile_update, name="staff_profile_update"),
     path('staff_add_result/', StaffViews.staff_add_result, name="staff_add_result"),
     path('staff_add_result_save/', StaffViews.staff_add_result_save, name="staff_add_result_save"),
+    path('staff_export_attendance/', StaffViews.staff_export_attendance, name="staff_export_attendance"),
+    path('staff_upload_assignment/', StaffViews.staff_upload_assignment, name="staff_upload_assignment"),
 
     # URSL for Student
     path('student_home/', StudentViews.student_home, name="student_home"),
@@ -101,6 +103,8 @@ urlpatterns = [
     path('student_profile/', StudentViews.student_profile, name="student_profile"),
     path('student_profile_update/', StudentViews.student_profile_update, name="student_profile_update"),
     path('student_view_result/', StudentViews.student_view_result, name="student_view_result"),
+    path('student_view_assignments/', StudentViews.student_view_assignments, name="student_view_assignments"),
+    path('student_get_notifications/', StudentViews.student_get_notifications, name="student_get_notifications"),
     
     # New Fetures: Fee Payment and Certificate Applciation
     path('student_fee_payment/', StudentViews.student_fee_payment, name="student_fee_payment"),

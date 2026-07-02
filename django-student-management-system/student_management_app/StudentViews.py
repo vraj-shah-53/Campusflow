@@ -478,3 +478,39 @@ def student_chatbot(request):
             
         return JsonResponse({"success": True, "reply": reply})
     return JsonResponse({"success": False, "reply": "Invalid request."})
+
+
+def student_view_assignments(request):
+    from student_management_app.models import Students, StudentAssignment
+    
+    student = Students.objects.get(admin=request.user.id)
+    # Get assignments for student's course and session year
+    assignments = StudentAssignment.objects.filter(
+        subject_id__course_id=student.course_id,
+        session_year_id=student.session_year_id
+    ).order_by('-created_at')
+    
+    context = {
+        "assignments": assignments
+    }
+    return render(request, "student_template/view_assignments_template.html", context)
+
+
+def student_get_notifications(request):
+    from student_management_app.models import Students, NotificationStudent
+    import json
+    
+    try:
+        student = Students.objects.get(admin=request.user.id)
+        notifications = NotificationStudent.objects.filter(student_id=student).order_by('-created_at')[:10]
+        
+        list_data = []
+        for notif in notifications:
+            list_data.append({
+                "id": notif.id,
+                "message": notif.message,
+                "created_at": notif.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            })
+        return HttpResponse(json.dumps(list_data), content_type="application/json")
+    except Exception as e:
+        return HttpResponse(json.dumps([]), content_type="application/json")

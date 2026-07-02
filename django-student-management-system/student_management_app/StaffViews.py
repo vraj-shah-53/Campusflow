@@ -43,16 +43,37 @@ def staff_home(request):
         subject_list.append(subject.subject_name)
         attendance_list.append(attendance_count1)
 
-    students_attendance = Students.objects.filter(course_id__in=final_course)
-    student_list = []
-    student_list_attendance_present = []
-    student_list_attendance_absent = []
-    for student in students_attendance:
-        attendance_present_count = AttendanceReport.objects.filter(status=True, student_id=student.id).count()
-        attendance_absent_count = AttendanceReport.objects.filter(status=False, student_id=student.id).count()
-        student_list.append(student.admin.first_name+" "+ student.admin.last_name)
-        student_list_attendance_present.append(attendance_present_count)
-        student_list_attendance_absent.append(attendance_absent_count)
+    # Fetch student attendance data subject-wise
+    subject_charts_data = []
+    for subject in subjects:
+        course_students = Students.objects.filter(course_id=subject.course_id).order_by('admin__username')
+        student_names = []
+        present_counts = []
+        absent_counts = []
+        
+        for student in course_students:
+            p_count = AttendanceReport.objects.filter(
+                status=True, 
+                student_id=student.id, 
+                attendance_id__subject_id=subject.id
+            ).count()
+            a_count = AttendanceReport.objects.filter(
+                status=False, 
+                student_id=student.id, 
+                attendance_id__subject_id=subject.id
+            ).count()
+            
+            student_names.append(student.admin.first_name + " " + student.admin.last_name)
+            present_counts.append(p_count)
+            absent_counts.append(a_count)
+            
+        subject_charts_data.append({
+            "subject_id": subject.id,
+            "subject_name": subject.subject_name,
+            "student_list": student_names,
+            "attendance_present_list": present_counts,
+            "attendance_absent_list": absent_counts
+        })
 
     context={
         "students_count": students_count,
@@ -61,9 +82,7 @@ def staff_home(request):
         "subject_count": subject_count,
         "subject_list": subject_list,
         "attendance_list": attendance_list,
-        "student_list": student_list,
-        "attendance_present_list": student_list_attendance_present,
-        "attendance_absent_list": student_list_attendance_absent
+        "subject_charts_data": subject_charts_data
     }
     return render(request, "staff_template/staff_home_template.html", context)
 
@@ -368,3 +387,231 @@ def staff_add_result_save(request):
         except:
             messages.error(request, "Failed to Add Result!")
             return redirect('staff_add_result')
+
+
+def staff_export_attendance(request):
+    if request.method != "POST":
+        subjects = Subjects.objects.filter(staff_id=request.user.id)
+        session_years = SessionYearModel.objects.filter(admin_creator=request.user.staffs.admin_creator)
+        context = {
+            "subjects": subjects,
+            "session_years": session_years,
+        }
+        return render(request, "staff_template/export_attendance_template.html", context)
+    else:
+        subject_id = request.POST.get('subject')
+        session_year_id = request.POST.get('session_year')
+
+        try:
+            subject = Subjects.objects.get(id=subject_id)
+            session_year = SessionYearModel.objects.get(id=session_year_id)
+        except Exception:
+            messages.error(request, "Invalid Subject or Session Year selected!")
+            return redirect('staff_export_attendance')
+
+        # Fetch students for this course and session
+        students = Students.objects.filter(course_id=subject.course_id, session_year_id=session_year).order_by('admin__username')
+        # Fetch all attendance records for this subject and session
+        attendance_list = Attendance.objects.filter(subject_id=subject, session_year_id=session_year).order_by('attendance_date')
+
+        if not students.exists():
+            messages.error(request, "No students found for this subject and session!")
+            return redirect('staff_export_attendance')
+
+        # Create workbook
+        import openpyxl
+        from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+        from openpyxl.utils import get_column_letter
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Attendance Summary"
+
+        # Enable grid lines explicitly
+        ws.views.sheetView[0].showGridLines = True
+
+        # Styles
+        font_header = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+        font_normal = Font(name="Calibri", size=11)
+        font_bold = Font(name="Calibri", size=11, bold=True)
+        
+        fill_header = PatternFill(start_color="1F497D", end_color="1F497D", fill_type="solid") # Deep navy
+        fill_present = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid") # Soft green
+        fill_absent = PatternFill(start_color="FCE4D6", end_color="FCE4D6", fill_type="solid") # Soft red
+        fill_summary = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid") # Light gray
+        
+        align_center = Alignment(horizontal="center", vertical="center")
+
+        thin_border = Border(
+            left=Side(style='thin', color='D9D9D9'),
+            right=Side(style='thin', color='D9D9D9'),
+            top=Side(style='thin', color='D9D9D9'),
+            bottom=Side(style='thin', color='D9D9D9')
+        )
+        double_bottom_border = Border(
+            left=Side(style='thin', color='D9D9D9'),
+            right=Side(style='thin', color='D9D9D9'),
+            top=Side(style='thin', color='D9D9D9'),
+            bottom=Side(style='double', color='000000')
+        )
+
+        # Header Row
+        headers = ["Date"]
+        for student in students:
+            headers.append(f"{student.admin.username}")
+        
+        ws.append(headers)
+        
+        # Style Header
+        for col_num in range(1, len(headers) + 1):
+            cell = ws.cell(row=1, column=col_num)
+            cell.font = font_header
+            cell.fill = fill_header
+            cell.alignment = align_center
+            cell.border = thin_border
+            
+        # Keep track of counts for present/absent
+        student_counts = {student.id: [0, 0] for student in students}
+
+        # Populate rows
+        row_num = 2
+        for att in attendance_list:
+            date_str = att.attendance_date.strftime('%d-%m-%Y')
+            row_data = [date_str]
+            
+            # Fetch all attendance reports for this attendance instance
+            att_reports = {report.student_id_id: report.status for report in AttendanceReport.objects.filter(attendance_id=att)}
+            
+            for student in students:
+                is_present = att_reports.get(student.id, False)
+                if is_present:
+                    status_str = "present"
+                    student_counts[student.id][0] += 1
+                else:
+                    status_str = "absent"
+                    student_counts[student.id][1] += 1
+                row_data.append(status_str)
+                
+            ws.append(row_data)
+            
+            # Style data row
+            cell_date = ws.cell(row=row_num, column=1)
+            cell_date.font = font_normal
+            cell_date.alignment = align_center
+            cell_date.border = thin_border
+            
+            for col_idx in range(2, len(row_data) + 1):
+                cell_status = ws.cell(row=row_num, column=col_idx)
+                status_val = row_data[col_idx - 1]
+                cell_status.font = font_normal
+                cell_status.alignment = align_center
+                cell_status.border = thin_border
+                if status_val == "present":
+                    cell_status.fill = fill_present
+                else:
+                    cell_status.fill = fill_absent
+            
+            row_num += 1
+
+        # Summary Row: Total Present
+        present_row = ["total present :"]
+        for student in students:
+            present_row.append(student_counts[student.id][0])
+        ws.append(present_row)
+        
+        # Style Total Present
+        for col_idx in range(1, len(present_row) + 1):
+            cell = ws.cell(row=row_num, column=col_idx)
+            cell.font = font_bold
+            cell.fill = fill_summary
+            cell.alignment = align_center
+            cell.border = thin_border
+        row_num += 1
+
+        # Summary Row: Total Absent
+        absent_row = ["total absent :"]
+        for student in students:
+            absent_row.append(student_counts[student.id][1])
+        ws.append(absent_row)
+        
+        # Style Total Absent
+        for col_idx in range(1, len(absent_row) + 1):
+            cell = ws.cell(row=row_num, column=col_idx)
+            cell.font = font_bold
+            cell.fill = fill_summary
+            cell.alignment = align_center
+            cell.border = double_bottom_border
+
+        # Auto-adjust column widths
+        for col in ws.columns:
+            max_len = 0
+            col_letter = get_column_letter(col[0].column)
+            for cell in col:
+                val_str = str(cell.value or '')
+                if len(val_str) > max_len:
+                    max_len = len(val_str)
+            ws.column_dimensions[col_letter].width = max(max_len + 4, 12)
+
+        # Build dynamic filename
+        subj_name_clean = "".join(c for c in subject.subject_name if c.isalnum() or c in (' ', '_', '-')).strip().replace(' ', '_')
+        session_name_clean = f"{session_year.session_start_year.strftime('%Y')}-{session_year.session_end_year.strftime('%Y')}"
+        filename = f"attendance_report_{subj_name_clean}_{session_name_clean}.xlsx"
+
+        # Prepare HTTP response
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        wb.save(response)
+        return response
+
+
+def staff_upload_assignment(request):
+    from student_management_app.models import StudentAssignment, NotificationStudent
+
+    if request.method != "POST":
+        subjects = Subjects.objects.filter(staff_id=request.user.id)
+        session_years = SessionYearModel.objects.filter(admin_creator=request.user.staffs.admin_creator)
+        context = {
+            "subjects": subjects,
+            "session_years": session_years,
+        }
+        return render(request, "staff_template/upload_assignment_template.html", context)
+    else:
+        subject_id = request.POST.get('subject')
+        session_year_id = request.POST.get('session_year')
+        assignment_title = request.POST.get('assignment_title')
+        assignment_description = request.POST.get('assignment_description')
+        assignment_file = request.FILES.get('assignment_file')
+
+        if not assignment_file:
+            messages.error(request, "Please upload a valid file.")
+            return redirect('staff_upload_assignment')
+
+        try:
+            subject_obj = Subjects.objects.get(id=subject_id)
+            session_year_obj = SessionYearModel.objects.get(id=session_year_id)
+            
+            # Save StudentAssignment
+            assignment = StudentAssignment(
+                subject_id=subject_obj,
+                session_year_id=session_year_obj,
+                assignment_title=assignment_title,
+                assignment_description=assignment_description,
+                assignment_file=assignment_file
+            )
+            assignment.save()
+
+            # Fetch all students enrolled under this course and session year
+            students = Students.objects.filter(course_id=subject_obj.course_id, session_year_id=session_year_obj)
+            
+            # Trigger pop-up notifications for all of them
+            for student in students:
+                NotificationStudent.objects.create(
+                    student_id=student,
+                    message=f"New assignment '{assignment_title}' uploaded for {subject_obj.subject_name}!"
+                )
+
+            messages.success(request, "Assignment uploaded successfully and students notified!")
+            return redirect('staff_upload_assignment')
+        except Exception as e:
+            messages.error(request, f"Failed to upload assignment: {str(e)}")
+            return redirect('staff_upload_assignment')
