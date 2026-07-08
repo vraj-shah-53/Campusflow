@@ -114,7 +114,8 @@ Take Attendance
                     var json_data = JSON.parse(response);
                     console.log(json_data)
                     //Displaying Attendance Date Input and Students Attendance
-                    var div_data = "<div class='form-group'><label>Attendance Date: </label> <input type='date' name='attendance_date' id='attendance_date' class='form-control' /></div>"
+                    var div_data = "<div class='form-group'><label>Attendance Topic / Description: </label> <input type='text' name='attendance_description' id='attendance_description' class='form-control' placeholder='Enter topic, e.g. Microprocessors Lab 2' /></div>"
+                    div_data += "<div class='form-group'><label>Attendance Date: </label> <input type='date' name='attendance_date' id='attendance_date' class='form-control' /></div>"
                     div_data += "<div class='form-group'><div class='row'>"
 
                     for (key in json_data) {
@@ -149,6 +150,7 @@ Take Attendance
                     }
                 }).get()
                 var attendance_date = $("#attendance_date").val();
+                var attendance_description = $("#attendance_description").val();
                 var subject_id = $("#subject").val();
                 var session_year_id = $("#session_year").val();
                 //console.log(attendance_date)
@@ -160,7 +162,7 @@ Take Attendance
                 $.ajax({
                     url: '{% url 'save_attendance_data' %}',
                     type: 'POST',
-                    data: { student_ids: student_data, attendance_date: attendance_date, subject_id: subject_id, session_year_id: session_year_id },
+                    data: { student_ids: student_data, attendance_date: attendance_date, subject_id: subject_id, session_year_id: session_year_id, description: attendance_description },
                 })
 
 

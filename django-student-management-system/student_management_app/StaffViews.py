@@ -192,6 +192,7 @@ def save_attendance_data(request):
     subject_id = request.POST.get("subject_id")
     attendance_date = request.POST.get("attendance_date")
     session_year_id = request.POST.get("session_year_id")
+    description = request.POST.get("description", "")
 
     subject_model = Subjects.objects.get(id=subject_id)
     session_year_model = SessionYearModel.objects.get(id=session_year_id)
@@ -202,7 +203,7 @@ def save_attendance_data(request):
     # print(student_ids)
     try:
         # First Attendance Data is Saved on Attendance Model
-        attendance = Attendance(subject_id=subject_model, attendance_date=attendance_date, session_year_id=session_year_model)
+        attendance = Attendance(subject_id=subject_model, attendance_date=attendance_date, session_year_id=session_year_model, description=description)
         attendance.save()
 
         for stud in json_student:
@@ -247,7 +248,7 @@ def get_attendance_dates(request):
     list_data = []
 
     for attendance_single in attendance:
-        data_small={"id":attendance_single.id, "attendance_date":str(attendance_single.attendance_date), "session_year_id":attendance_single.session_year_id.id}
+        data_small={"id":attendance_single.id, "attendance_date":str(attendance_single.attendance_date), "session_year_id":attendance_single.session_year_id.id, "description":attendance_single.description or ""}
         list_data.append(data_small)
 
     return JsonResponse(json.dumps(list_data), content_type="application/json", safe=False)
@@ -275,11 +276,15 @@ def update_attendance_data(request):
     student_ids = request.POST.get("student_ids")
 
     attendance_date = request.POST.get("attendance_date")
+    description = request.POST.get("description")
     attendance = Attendance.objects.get(id=attendance_date)
 
     json_student = json.loads(student_ids)
 
     try:
+        if description is not None:
+            attendance.description = description
+            attendance.save()
         
         for stud in json_student:
             # Attendance of Individual Student saved on AttendanceReport Model
@@ -456,7 +461,7 @@ def staff_export_attendance(request):
         )
 
         # Header Row
-        headers = ["Date"]
+        headers = ["Date", "Description"]
         for student in students:
             headers.append(f"{student.admin.username}")
         
@@ -477,7 +482,7 @@ def staff_export_attendance(request):
         row_num = 2
         for att in attendance_list:
             date_str = att.attendance_date.strftime('%d-%m-%Y')
-            row_data = [date_str]
+            row_data = [date_str, att.description or ""]
             
             # Fetch all attendance reports for this attendance instance
             att_reports = {report.student_id_id: report.status for report in AttendanceReport.objects.filter(attendance_id=att)}
@@ -500,7 +505,12 @@ def staff_export_attendance(request):
             cell_date.alignment = align_center
             cell_date.border = thin_border
             
-            for col_idx in range(2, len(row_data) + 1):
+            cell_desc = ws.cell(row=row_num, column=2)
+            cell_desc.font = font_normal
+            cell_desc.alignment = align_center
+            cell_desc.border = thin_border
+
+            for col_idx in range(3, len(row_data) + 1):
                 cell_status = ws.cell(row=row_num, column=col_idx)
                 status_val = row_data[col_idx - 1]
                 cell_status.font = font_normal
@@ -514,7 +524,7 @@ def staff_export_attendance(request):
             row_num += 1
 
         # Summary Row: Total Present
-        present_row = ["total present :"]
+        present_row = ["total present :", ""]
         for student in students:
             present_row.append(student_counts[student.id][0])
         ws.append(present_row)
@@ -529,7 +539,7 @@ def staff_export_attendance(request):
         row_num += 1
 
         # Summary Row: Total Absent
-        absent_row = ["total absent :"]
+        absent_row = ["total absent :", ""]
         for student in students:
             absent_row.append(student_counts[student.id][1])
         ws.append(absent_row)

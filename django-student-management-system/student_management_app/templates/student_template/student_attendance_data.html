@@ -59,9 +59,10 @@
 
                                         <div class="col-lg-3 attendance_div_green">
                                             <b>Date : {{ attendance_report.attendance_id.attendance_date }}</b> <br/>
-                                            
-                                                <b>[ Status : Present ]</b>
-                                            
+                                            {% if attendance_report.attendance_id.description %}
+                                                <small style="opacity: 0.95; font-style: italic;">Topic: {{ attendance_report.attendance_id.description }}</small> <br/>
+                                            {% endif %}
+                                            <b>[ Status : Present ]</b>
                                         </div>
                                     
 
@@ -69,9 +70,10 @@
 
                                         <div class="col-lg-3 attendance_div_red">
                                             <b>Date : {{ attendance_report.attendance_id.attendance_date }}</b> <br/>
-                                            
-                                                <b>[ Status : Absent ]</b>
-                                            
+                                            {% if attendance_report.attendance_id.description %}
+                                                <small style="opacity: 0.95; font-style: italic;">Topic: {{ attendance_report.attendance_id.description }}</small> <br/>
+                                            {% endif %}
+                                            <b>[ Status : Absent ]</b>
                                         </div>
 
                                 {% endif %}

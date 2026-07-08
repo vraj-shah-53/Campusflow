@@ -81,6 +81,10 @@
                                         
                                     </select>
                                 </div>
+                                <div class="form-group" id="attendance_desc_block" style="display:none;">
+                                    <label>Attendance Description / Topic </label>
+                                    <input type="text" class="form-control" name="attendance_desc" id="attendance_desc" placeholder="Topic description..." />
+                                </div>
                             </div>
 
                             <div class="form-group">
@@ -145,6 +149,7 @@
                 
                 .done(function(response){
                     var json_data = JSON.parse(response);
+                    window.attendance_dates_global = json_data;
                     if(json_data.length>0)
                     {
                         var html_data = "";
@@ -155,16 +160,17 @@
                         $("#error_attendance").html("");
                         $("#error_attendance").hide();
                         $("#attendance_block").show();
+                        $("#attendance_desc_block").show();
                         $("#fetch_student_block").show();
                         $("#attendance_date").html(html_data);
-                        //console.log(response)
-                        //alert("Something")
+                        $("#attendance_date").trigger("change");
                     }
                     else
                     {
                         $("#error_attendance").html("No Attendance Data Found.");
                         $("#error_attendance").show();
                         $("#attendance_block").hide();
+                        $("#attendance_desc_block").hide();
                         $("#fetch_student_block").hide();
                         $("#attendance_date")="" //Empty the Date Dropdown also
                     }
@@ -176,10 +182,21 @@
                     $("#error_attendance").html("");
                     $("#fetch_student_block").hide();
                     $("#attendance_block").hide();
+                    $("#attendance_desc_block").hide();
                 });
 
                 
         })
+
+        $(document).on("change", "#attendance_date", function() {
+            var selected_id = $(this).val();
+            if (window.attendance_dates_global) {
+                var found = window.attendance_dates_global.find(x => x.id == selected_id);
+                if (found) {
+                    $("#attendance_desc").val(found.description || "");
+                }
+            }
+        });
 
         // Now Working on Fetch Student after attendance date selected
         $("#fetch_student").click(function(){
@@ -275,7 +292,7 @@
                 $.ajax({
                     url:'{% url 'update_attendance_data' %}',
                     type:'POST',
-                    data:{student_ids:student_data, attendance_date:attendance_date},
+                    data:{student_ids:student_data, attendance_date:attendance_date, description:$("#attendance_desc").val()},
                 })
 
                 
