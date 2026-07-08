@@ -24,12 +24,21 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
+    'campusflow-ucjm.onrender.com',
+    'vgecw-ucjm.onrender.com',
+    '.onrender.com',
     'https://campusflow-ucjm.onrender.com',
+    'https://vgecw-ucjm.onrender.com',
 ]
 
 RENDER_EXTERNAL_URL = os.environ.get('RENDER_EXTERNAL_URL')
 if RENDER_EXTERNAL_URL:
     CSRF_TRUSTED_ORIGINS.append(RENDER_EXTERNAL_URL)
+    # Remove scheme for older Django 3.x
+    clean_host = RENDER_EXTERNAL_URL.replace('https://', '').replace('http://', '')
+    CSRF_TRUSTED_ORIGINS.append(clean_host)
+
+CSRF_FAILURE_VIEW = 'student_management_app.views.custom_csrf_failure'
 
 IS_RENDER = 'RENDER' in os.environ
 

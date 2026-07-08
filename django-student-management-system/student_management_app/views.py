@@ -15,7 +15,17 @@ def entrance(request):
             return redirect('staff_home')
         elif request.user.user_type == '3':
             return redirect('student_home')
+
+    # Check for CSRF error parameter
+    csrf_err = request.GET.get('csrf_err')
+    if csrf_err:
+        messages.error(request, "Session expired or verification failed. Please try again.")
+
     return render(request, 'entrance.html')
+
+
+def custom_csrf_failure(request, reason=""):
+    return redirect('/?csrf_err=1')
 
 
 def loginPage(request, role=None):
